@@ -19,3 +19,70 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+button {
+  padding: 4px 10px;
+  margin: 0 10px;
+  border-radius: 4px;
+  border: 1px solid #eee;
+}
+
+.blue g {
+  stroke: blue;
+}
+.blue {
+  color: blue;
+}
+.blue textarea {
+  color: blue;
+}
+
+/* 鼠标hover和激活时渲染的矩形 */
+/* .smm-hover-node {
+  display: none;
+  opacity: 0.6;
+  stroke-width: 1;
+}
+
+.smm-node:not(.smm-node-dragging):hover .smm-hover-node {
+  display: block;
+}
+
+.smm-node.active .smm-hover-node,
+.smm-node-highlight .smm-hover-node {
+  display: block;
+  opacity: 1;
+  stroke-width: 2;
+}
+
+.smm-text-node-wrap,
+.smm-expand-btn-text {
+  user-select: none;
+}
+
+.smm-richtext-node-wrap {
+  word-break: break-all;
+  user-select: none;
+}
+
+.ql-editor .ql-align-left,
+.smm-richtext-node-wrap .ql-align-left {
+  text-align: left;
+}
+
+.smm-richtext-node-wrap .ql-align-right {
+  text-align: right;
+}
+
+.smm-richtext-node-wrap .ql-align-center {
+  text-align: center;
+} */
+
+/* 屏蔽 svg 中 foreignObject 事件 */
+.smm-node > * {
+  border: 1px solid blue;
+}
+#svgContainer .smm-node div,
+#svgContainer p {
+  pointer-events: none;
+}
