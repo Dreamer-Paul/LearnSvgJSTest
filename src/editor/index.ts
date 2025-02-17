@@ -32,6 +32,38 @@ class SmartArtEditor {
     this.draw = SVG().addTo(props.el);
 
     this.drawContext();
+
+    this.bindClickEvent();
+  }
+
+  bindClickEvent() {
+    this.draw.on("click", async (ev) => {
+      console.log(ev.target);
+
+      if (!(ev.target instanceof Element)) {
+        return;
+      }
+
+      const { id } = ev.target;
+      const index = parseInt(id.split("-").pop() || "0", 10);
+
+      // id 示例：bt-cc-add-1，意味着我需要插入一个节点到索引为 1 的位置（0 后面插一个）
+      if (id.includes("add")) {
+        this.addItem(index); // 添加项目
+        // this.draw.clear(); // 清空画布
+        // await this.getTemplate(this.template); // 替换模板
+        this.drawContext(); // 重新绘制内容
+      }
+      // id 示例：bt-cc-remove-2 意味着我需要删除索引为 1 的元素
+      else if (id.includes("remove")) {
+        this.removeItem(index); // 删除项目
+
+        // console.log(index, this.data.items);
+        // this.draw.clear(); // 清空画布
+        // await this.getTemplate(this.template); // 替换模板
+        this.drawContext(); // 重新绘制内容
+      }
+    });
   }
 
   /**
@@ -61,18 +93,16 @@ class SmartArtEditor {
 
     const width = Number(svgElement.getAttribute("width") || 0);
     const height = Number(svgElement.getAttribute("height") || 0);
-    // svgElement.getAttribute("height");
-
-    // this.draw.svg(svgElement.outerHTML);
 
     return [svgElement.outerHTML, width, height];
   }
 
   async drawContext() {
-    this.draw.rect("100%", "100%").fill("skyblue");
+    this.draw.rect("100%", "100%").fill("beige");
 
     const [str, width, height] = await this.getTemplate(this.template);
 
+    this.draw.clear();
     this.draw
       .svg(str as string)
       .x(0)
@@ -83,19 +113,19 @@ class SmartArtEditor {
     this.fillItemText();
   }
 
-  wrapText(text: string, width: width) {
+  wrapText(text: string, width: number) {
     const draw = this.draw;
-    const words = text.split('');
+    const words = text.split("");
     const lines = [];
-    let currentLine = '';
+    let currentLine = "";
 
     // 创建临时文本元素来测量宽度
-    const tempText = draw.text('').font({
+    const tempText = draw.text("").font({
       // family: 'Arial',
       size: 24,
     });
 
-    words.forEach(word => {
+    words.forEach((word) => {
       tempText.text(currentLine + word);
 
       if (tempText.length() > width) {
@@ -148,7 +178,6 @@ class SmartArtEditor {
             // tspan.x(tspan.x() + tspan.width());
 
             console.log("length", tspan.length());
-
           });
 
           // add.tspan();
@@ -177,17 +206,11 @@ class SmartArtEditor {
   }
 
   addItem(index: number) {
-    this.data.items.push({
-      text: "",
-    });
-
-    this.drawContext();
+    this.data.items.splice(index - 1, 0, { text: "" }); // 在指定索引后插入一个新项目
   }
 
   removeItem(index: number) {
-    this.data.items.splice(index, 1);
-
-    this.drawContext();
+    this.data.items.splice(index - 1, 1); // 删除指定索引的项目
   }
 
   exportSVG = () => {
