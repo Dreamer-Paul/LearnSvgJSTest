@@ -33,11 +33,8 @@ function handleSvgClick(event: Event) {
   const target = event.target as HTMLElement;
 
   // 检查目标元素是否具有 class 为 'smm-node'
-  if (target.classList.contains("smm-node")) {
-    // 执行相应的逻辑
-    console.log('Clicked on an element with class "smm-node":', target);
-  } else if (target.tagName === "foreignObject") {
-    console.log("Clicked on a foreignObject:", target);
+  if (target.classList.contains("text-node")) {
+    console.log("text-node target:", target);
 
     const rect = target.getBoundingClientRect();
 
@@ -116,7 +113,7 @@ textarea {
   padding: 0;
 }
 
-#svgItem .smm-node div,
+#svgItem div,
 #svgItem p {
   pointer-events: none;
 }
@@ -351,21 +348,15 @@ foreignObject p {
                 </g>
               </g>
             </g>
-            <g
-              id="text-1"
-              data-item-order="0"
-              transform="translate(15, 333)"
-              class="smm-node"
-              style="border: 1px solid red"
-            >
-              <g
-                id="tx_ai_dbpwbq4r6c5j-fill"
-                stroke="none"
-                fill="#484848"
-                class="smm-node"
-              >
-                <g class="smm-node">
-                  <foreignObject width="120" height="60" x="0" y="0"
+            <g id="text-1" data-item-order="0" transform="translate(15, 333)">
+              <g id="tx_ai_dbpwbq4r6c5j-fill" stroke="none" fill="#484848">
+                <g>
+                  <foreignObject
+                    width="120"
+                    height="60"
+                    x="0"
+                    y="0"
+                    class="text-node"
                     ><div>
                       <p
                         style="
