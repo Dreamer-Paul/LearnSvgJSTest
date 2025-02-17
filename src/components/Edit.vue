@@ -78,6 +78,15 @@ onMounted(() => {
 </script>
 
 <style scoped>
+html,
+body,
+input,
+textarea {
+  font-family: sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
 .svg--container {
   position: relative;
   border: 1px solid black;
@@ -90,6 +99,9 @@ onMounted(() => {
 
 .svg--input__container {
   position: absolute;
+  margin: 0;
+  padding: 0;
+  border: 1px solid red;
 }
 
 .svg--input {
@@ -99,8 +111,9 @@ onMounted(() => {
   white-space: pre-wrap;
   word-break: break-all;
   overflow-wrap: break-word;
-  font-size: 15px;
-  border: 1px solid red;
+
+  margin: 0;
+  padding: 0;
 }
 
 #svgItem .smm-node div,
@@ -360,6 +373,8 @@ foreignObject p {
                           white-space: pre-wrap;
                           word-break: break-all;
                           overflow-wrap: break-word;
+                          font-size: 16px;
+                          line-height: 1.6;
                         "
                       >
                         {{ svgText.text1 }}
