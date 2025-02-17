@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, reactive } from "vue";
+import { debounce } from "lodash";
 
 const svgPostion = reactive({
   left: 0,
@@ -63,7 +64,8 @@ function handleSvgClick(event: Event) {
   }
 }
 
-onMounted(() => {
+function updateSvgPostion() {
+  console.log("updateSvgPostion");
   const svgContainer = document.querySelector("#svgItem");
 
   if (svgContainer) {
@@ -71,6 +73,17 @@ onMounted(() => {
     svgPostion.left = svgRect.left;
     svgPostion.top = svgRect.top;
   }
+}
+
+onMounted(() => {
+  updateSvgPostion();
+
+  window.addEventListener(
+    "scroll",
+    debounce(() => {
+      updateSvgPostion();
+    }, 300)
+  );
 });
 </script>
 
@@ -87,7 +100,9 @@ textarea {
 .svg--container {
   position: relative;
   border: 1px solid black;
-  display: inline-block;
+  display: flex;
+  width: 794px;
+  height: 638px;
 }
 .svg--container svg {
   position: relative;
@@ -132,7 +147,16 @@ foreignObject p {
 <template>
   <div>
     <h1>编辑</h1>
-    <div class="svg--container">
+    <div
+      class="svg--container"
+      style="
+        --page-multiplier: 1;
+        --comment-multiplier: 1;
+        --speaker-multiplier: 1;
+        --page-height: 638px;
+        --page-width: 794px;
+      "
+    >
       <svg
         width="794"
         height="638"
