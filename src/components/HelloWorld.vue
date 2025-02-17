@@ -10,6 +10,7 @@ const inputWrap = reactive({
   height: 0,
   x: 0,
   y: 0,
+  text: "",
 });
 
 let draw: Svg;
@@ -38,6 +39,7 @@ onMounted(async () => {
       inputWrap.y = inputPosition.y;
       inputWrap.height = inputPosition.height;
       inputWrap.width = inputPosition.width;
+      inputWrap.text = inputPosition.text;
     },
   });
 
@@ -61,7 +63,11 @@ onMounted(async () => {
         top: inputWrap?.y + 'px',
       }"
     >
-      input
+      <textarea
+        class="svg--input"
+        style="text-align: left"
+        :value="inputWrap.text"
+      ></textarea>
     </div>
   </div>
 

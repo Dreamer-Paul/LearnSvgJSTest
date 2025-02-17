@@ -10,6 +10,7 @@ interface SmartArtEditorProps {
     height: number;
     x: number;
     y: number;
+    text: string;
   }) => void;
 }
 
@@ -36,6 +37,7 @@ class SmartArtEditor {
     height: number;
     x: number;
     y: number;
+    text: string;
   }) => void;
 
   constructor(props: SmartArtEditorProps) {
@@ -92,7 +94,8 @@ class SmartArtEditor {
 
       // 文本元素
       if (id.includes("tx-")) {
-        const rect = ev.target.getBoundingClientRect();
+        const target = ev.target;
+        const rect = target.getBoundingClientRect();
         console.log("rect", rect, this.svgPosition);
 
         this.onInputPositionChange({
@@ -100,10 +103,19 @@ class SmartArtEditor {
           height: rect.height,
           x: rect.left - (this.svgPosition.left || 0),
           y: rect.top - (this.svgPosition.top || 0),
+          text: target.getAttribute("data-text") || "",
         });
 
         return;
       }
+
+      this.onInputPositionChange({
+        width: 0,
+        height: 0,
+        x: 0,
+        y: 0,
+        text: "",
+      });
 
       const index = parseInt(id.split("-").pop() || "0", 10);
 
@@ -217,6 +229,8 @@ class SmartArtEditor {
       const el = pathElement || pathElementRight;
 
       if (el) {
+        el.attr({ "data-text": this.data.items[index].text || "" });
+
         const matrix = el.transform();
         const bbox = el.bbox();
         // const transformedX = matrix.translateX;
