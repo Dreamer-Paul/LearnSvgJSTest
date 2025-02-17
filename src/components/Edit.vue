@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import { debounce } from "lodash";
 
 const svgPostion = reactive({
@@ -16,7 +16,10 @@ const inputWrap = reactive({
 
 const svgText = reactive({
   text1: "AI 搜索引擎比较",
+  text2: "功能",
 });
+
+const svgTextId = ref("0");
 
 function updateInputWrap(
   newWidth: number,
@@ -57,6 +60,12 @@ function handleSvgClick(event: Event) {
     const height = parseInt(target?.getAttribute("height") || "0", 10);
 
     updateInputWrap(width, height, x, y);
+
+    // 获取 data-id
+    const dataId = target.dataset.id;
+    console.log("dataId", dataId);
+
+    svgTextId.value = dataId || "0";
   } else {
     console.log("Clicked on a different element:", target);
 
@@ -84,6 +93,13 @@ onMounted(() => {
       updateSvgPostion();
     }, 300)
   );
+
+  document.addEventListener("click", (event) => {
+    const target = event.target as HTMLElement;
+    if (!target.closest("#svgItem")) {
+      updateInputWrap(0, 0, 0, 0);
+    }
+  });
 });
 </script>
 
@@ -146,7 +162,7 @@ foreignObject p {
 
 <template>
   <div>
-    <h1>编辑</h1>
+    <h1>编辑 - {{ svgTextId }}</h1>
     <div
       class="svg--container"
       style="
@@ -299,11 +315,33 @@ foreignObject p {
             >
               <g id="tx__1cvivhi4r6adf-fill" stroke="none" fill="#484848">
                 <g>
-                  <text font-size="20px" font-family="Roboto, sans-serif">
+                  <!-- <text font-size="20px" font-family="Roboto, sans-serif">
                     <tspan x="12" y="33.5" dominant-baseline="ideographic">
                       功能
                     </tspan>
-                  </text>
+                  </text> -->
+
+                  <foreignObject
+                    width="110"
+                    height="60"
+                    x="0"
+                    y="0"
+                    class="text-node"
+                    data-id="2"
+                  >
+                    <p
+                      style="
+                        text-align: left;
+                        white-space: pre-wrap;
+                        word-break: break-all;
+                        overflow-wrap: break-word;
+                        font-size: 20px;
+                        line-height: 1.6;
+                      "
+                    >
+                      {{ svgText.text2 }}
+                    </p>
+                  </foreignObject>
                 </g>
               </g>
             </g>
@@ -381,6 +419,7 @@ foreignObject p {
                     x="0"
                     y="0"
                     class="text-node"
+                    data-id="1"
                     ><div>
                       <p
                         style="
@@ -787,7 +826,18 @@ foreignObject p {
           top: inputWrap?.y + 'px',
         }"
       >
-        <textarea class="svg--input" v-model="svgText.text1"></textarea>
+        <textarea
+          v-if="svgTextId === '1'"
+          class="svg--input"
+          v-model="svgText.text1"
+        ></textarea>
+
+        <textarea
+          v-if="svgTextId === '2'"
+          class="svg--input"
+          v-model="svgText.text2"
+          style="text-align: left; font-size: 20px"
+        ></textarea>
       </div>
     </div>
   </div>
