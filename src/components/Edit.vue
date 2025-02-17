@@ -96,7 +96,11 @@ onMounted(() => {
 
   document.addEventListener("click", (event) => {
     const target = event.target as HTMLElement;
-    if (!target.closest("#svgItem")) {
+    if (
+      !target.closest("#svgItem") &&
+      target.tagName !== "INPUT" &&
+      target.tagName !== "TEXTAREA"
+    ) {
       updateInputWrap(0, 0, 0, 0);
     }
   });
