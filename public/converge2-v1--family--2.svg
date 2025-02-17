@@ -1,0 +1,26 @@
+<svg width="744" height="612" viewBox="0 0 744 612" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="converge2-v1--family--2">
+<g id="lines">
+<g id="g-0">
+<path id="Vector" d="M444 323.996C444 284.232 411.765 251.996 372 251.996C332.236 251.996 300 284.232 300 323.996C300 363.761 332.236 395.996 372 395.996C411.764 395.996 444 363.761 444 323.996Z" fill="#F6F6F6" stroke="#BCBCBC" stroke-width="2"/>
+</g>
+<g id="g-2">
+<path id="Vector_2" d="M265.735 336.893L279.701 324L265.735 311.108L265.735 318.284L239.549 318.284C236.81 301.118 221.937 288 204 288C184.118 288 168 304.118 168 324C168 343.882 184.118 360 204 360C221.912 360 236.769 346.918 239.537 329.788L265.735 329.788L265.735 336.893Z" fill="#E7FBF2" stroke="#3CC583" stroke-width="2"/>
+</g>
+<g id="g-1">
+<path id="Vector_3" d="M477.965 336.893L464 324L477.965 311.108L477.965 318.284L504.089 318.284C506.828 301.118 521.701 288 539.638 288C559.52 288 575.638 304.118 575.638 324C575.638 343.882 559.52 360 539.638 360C521.726 360 506.869 346.918 504.1 329.788L477.965 329.788L477.965 336.893Z" fill="#FEFBDB" stroke="#D1BD08" stroke-width="2"/>
+</g>
+</g>
+<path id="tx-rc-2" d="M0 288H156V360H0L0 288Z" fill="#FF0000" fill-opacity="0.1"/>
+<path id="tx-lc-1" d="M588 288H744V360H588V288Z" fill="#FF0000" fill-opacity="0.1"/>
+<path id="tx-cb-title" d="M72 168L672 168V216L72 216L72 168Z" fill="#FF0000" fill-opacity="0.1"/>
+<path id="ic-cc-end" d="M336 287.996H408V359.996H336V287.996Z" fill="#33DE7B" fill-opacity="0.1"/>
+<path id="ic-cc-2" d="M180 300H228V348H180V300Z" fill="#33DE7B" fill-opacity="0.1"/>
+<path id="ic-cc-1" d="M516 300H564V348H516V300Z" fill="#33DE7B" fill-opacity="0.1"/>
+<rect id="bt-cc-remove-1" x="570" y="312" width="24" height="24" fill="#1AC6FF" fill-opacity="0.2"/>
+<rect id="bt-cc-remove-2" x="150" y="312" width="24" height="24" fill="#1AC6FF" fill-opacity="0.2"/>
+<rect id="bt-cc-add-3" x="214.508" y="228" width="24" height="24" fill="#1AC6FF" fill-opacity="0.2"/>
+<rect id="bt-cc-add-2" x="360" y="408" width="24" height="24" fill="#1AC6FF" fill-opacity="0.2"/>
+<rect id="bt-cc-add-1" x="505.492" y="228" width="24" height="24" fill="#1AC6FF" fill-opacity="0.2"/>
+</g>
+</svg>
