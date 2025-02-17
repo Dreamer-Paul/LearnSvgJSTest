@@ -83,15 +83,46 @@ class SmartArtEditor {
     this.fillItemText();
   }
 
+  wrapText(text: string, width: width) {
+    const draw = this.draw;
+    const words = text.split('');
+    const lines = [];
+    let currentLine = '';
+
+    // 创建临时文本元素来测量宽度
+    const tempText = draw.text('').font({
+      // family: 'Arial',
+      size: 24,
+    });
+
+    words.forEach(word => {
+      tempText.text(currentLine + word);
+
+      if (tempText.length() > width) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine += word;
+      }
+    });
+
+    if (currentLine) {
+      lines.push(currentLine);
+    }
+
+    tempText.remove();
+    return lines;
+  }
+
   /**
    * 填入文本到 Svg 图
    */
   fillItemText() {
-    let index = 1;
+    let index = 0;
 
     while (index <= this.count) {
-      const pathElement = this.draw.findOne(`#tx-lc-${index}`) as Path;
-      const pathElementRight = this.draw.findOne(`#tx-rc-${index}`) as Path;
+      const pathElement = this.draw.findOne(`#tx-lc-${index + 1}`) as Path;
+      const pathElementRight = this.draw.findOne(`#tx-rc-${index + 1}`) as Path;
 
       const el = pathElement || pathElementRight;
 
@@ -101,18 +132,44 @@ class SmartArtEditor {
         // const transformedX = matrix.translateX;
         // const transformedY = matrix.translateY - Math.round(bbox.height / 2);
 
-        console.log(bbox.height, matrix, el.x(), el.y());
+        // console.log(bbox.height, matrix, el.x(), el.y());
+
+        this.draw.text((add) => {
+          const content = this.data.items[index].text;
+          // console.log(el.width());
+          const lines = this.wrapText(content, el.width());
+
+          lines.forEach((line, index) => {
+            // console.log("f", add.width());
+            // add.x(add.x() + add.width());
+
+            const tspan = add.tspan(line).newLine();
+
+            // tspan.x(tspan.x() + tspan.width());
+
+            console.log("length", tspan.length());
+
+          });
+
+          // add.tspan();
+          add.font({
+            size: 24,
+          });
+          add.translate(el.x(), el.y() + 24);
+        });
+
+        console.log(this.data.items[index].text);
 
         // 创建一个外部 div 元素
-        const foreignObject = this.draw
-          .foreignObject(bbox.width, 24 * 1.5)
-          // .move(transformedX, transformedY)
-          // .cy(transformedY)
-          // .translate(transformedX, transformedY);
-          .translate(el.x(), el.y());
-        foreignObject.add(
-          `<div xmlns="http://www.w3.org/1999/xhtml" style="font-size: 24px; color: red;">重叠富文本 ${index}</div>`
-        );
+        // const foreignObject = this.draw
+        //   .foreignObject(bbox.width, 24 * 1.5)
+        //   // .move(transformedX, transformedY)
+        //   // .cy(transformedY)
+        //   // .translate(transformedX, transformedY);
+        //   .translate(el.x(), el.y());
+        // foreignObject.add(
+        //   `<div xmlns="http://www.w3.org/1999/xhtml" style="font-size: 24px; color: red;">重叠富文本 ${index}</div>`
+        // );
       }
 
       index++;
