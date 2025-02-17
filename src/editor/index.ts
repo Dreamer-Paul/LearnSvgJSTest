@@ -190,6 +190,7 @@ class SmartArtEditor {
     const words = text.split("");
     const lines = [];
     let currentLine = "";
+    let currentLineWidth = 0;
 
     // 创建临时文本元素来测量宽度
     const tempText = draw.text("").font({
@@ -201,22 +202,21 @@ class SmartArtEditor {
       tempText.text(currentLine + word);
 
       if (tempText.length() > width) {
-        lines.push(currentLine);
+        lines.push({ text: currentLine, width: currentLineWidth, height: 24 });
         currentLine = word;
+        currentLineWidth = tempText.length();
       } else {
         currentLine += word;
+        currentLineWidth = tempText.length();
       }
     });
 
     if (currentLine) {
-      lines.push(currentLine);
+      lines.push({ text: currentLine, width: currentLineWidth, height: 24 });
     }
 
-    const textWidth = tempText.length();
-    const textHeight = lines.length * 24; // 假设每行文本的高度为 24
-
     tempText.remove();
-    return { lines, textWidth, textHeight };
+    return lines;
   }
 
   /**
@@ -229,21 +229,31 @@ class SmartArtEditor {
       const element = el as Path;
       element.attr({ "data-text": this.data.items[index].text || "" });
 
+      const id = element.id();
+      // Todo 这里插入的顺序会反，怎么办
+      console.log("id", id);
+
       this.draw.text((add) => {
-        const content = this.data.items[index].text;
-        const { lines, textWidth, textHeight } = this.wrapText(content, element.width() as number);
+        let content = "";
+
+        if (id.includes("title")) {
+          content = "标题（假的）";
+        } else {
+          content = this.data.items[index].text;
+        }
+
+        const lines = this.wrapText(content, element.width() as number);
 
         lines.forEach((line) => {
-          const tspan = add.tspan(line).newLine();
-          const id = element.id();
+          const tspan = add.tspan(line.text).newLine();
 
           // 设置文本对齐方式
           if (id.includes("lt") || id.includes("lc") || id.includes("lb")) {
             tspan.dx(0); // 左对齐
           } else if (id.includes("rt") || id.includes("rc") || id.includes("rb")) {
-            tspan.dx(element.width() as number - textWidth); // 右对齐
+            tspan.dx(element.width() as number - line.width); // 右对齐
           } else {
-            tspan.dx((element.width() as number - textWidth) / 2); // 居中对齐
+            tspan.dx((element.width() as number - line.width) / 2); // 居中对齐
           }
         });
 
