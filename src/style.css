@@ -65,6 +65,21 @@ button:focus-visible {
   /* text-align: center; */
 }
 
+#svg-container text,
+#svg-container tspan {
+  pointer-events: none;
+}
+.svg--conatiner {
+  position: relative;
+  border: 1px solid blue;
+}
+.svg--input__container {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  border: 1px solid red;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

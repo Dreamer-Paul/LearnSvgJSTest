@@ -1,9 +1,16 @@
 import { Path, SVG, type Svg } from "@svgdotjs/svg.js";
+import { debounce } from "lodash";
 
 interface SmartArtEditorProps {
   el: string;
   template: string;
   data: SmartArtData;
+  onInputPositionChange: (position: {
+    width: number;
+    height: number;
+    x: number;
+    y: number;
+  }) => void;
 }
 
 interface SmartArtData {
@@ -23,17 +30,54 @@ class SmartArtEditor {
     items: [],
   };
   private draw: Svg;
+  private svgPosition: { left: number; top: number };
+  private onInputPositionChange: (position: {
+    width: number;
+    height: number;
+    x: number;
+    y: number;
+  }) => void;
 
   constructor(props: SmartArtEditorProps) {
     // this.el = props.el;
     this.template = props.template;
+    this.onInputPositionChange = props.onInputPositionChange;
+
     this.setData(props.data);
+
+    this.svgPosition = { left: 0, top: 0 };
 
     this.draw = SVG().addTo(props.el);
 
     this.drawContext();
 
     this.bindClickEvent();
+
+    this.init();
+  }
+
+  // 初始化
+  init() {
+    console.log("init", this.draw, this.svgPosition);
+    this.gegSvgPosition();
+
+    window.addEventListener(
+      "scroll",
+      debounce(() => {
+        console.log("scroll", this.draw.node.getBoundingClientRect());
+
+        this.gegSvgPosition();
+      }, 300)
+    );
+  }
+
+  // 获取 svg 位置
+  gegSvgPosition() {
+    const rect = this.draw.node.getBoundingClientRect();
+    this.svgPosition = {
+      left: rect.left,
+      top: rect.top,
+    };
   }
 
   bindClickEvent() {
@@ -45,6 +89,22 @@ class SmartArtEditor {
       }
 
       const { id } = ev.target;
+
+      // 文本元素
+      if (id.includes("tx-")) {
+        const rect = ev.target.getBoundingClientRect();
+        console.log("rect", rect, this.svgPosition);
+
+        this.onInputPositionChange({
+          width: rect.width,
+          height: rect.height,
+          x: rect.left - (this.svgPosition.left || 0),
+          y: rect.top - (this.svgPosition.top || 0),
+        });
+
+        return;
+      }
+
       const index = parseInt(id.split("-").pop() || "0", 10);
 
       // id 示例：bt-cc-add-1，意味着我需要插入一个节点到索引为 1 的位置（0 后面插一个）
