@@ -178,7 +178,7 @@ class SmartArtEditor {
     this.draw
       .svg(str as string)
       .x(0)
-      .y(100);
+      .y(0);
 
     this.draw.size(width, height);
 
@@ -212,71 +212,49 @@ class SmartArtEditor {
       lines.push(currentLine);
     }
 
+    const textWidth = tempText.length();
+    const textHeight = lines.length * 24; // 假设每行文本的高度为 24
+
     tempText.remove();
-    return lines;
+    return { lines, textWidth, textHeight };
   }
 
   /**
    * 填入文本到 Svg 图
    */
   fillItemText() {
-    let index = 0;
+    const elements = this.draw.find("[id^='tx-']");
 
-    while (index <= this.count) {
-      const pathElement = this.draw.findOne(`#tx-lc-${index + 1}`) as Path;
-      const pathElementRight = this.draw.findOne(`#tx-rc-${index + 1}`) as Path;
+    elements.each((el, index) => {
+      const element = el as Path;
+      element.attr({ "data-text": this.data.items[index].text || "" });
 
-      const el = pathElement || pathElementRight;
+      this.draw.text((add) => {
+        const content = this.data.items[index].text;
+        const { lines, textWidth, textHeight } = this.wrapText(content, element.width() as number);
 
-      if (el) {
-        el.attr({ "data-text": this.data.items[index].text || "" });
+        lines.forEach((line) => {
+          const tspan = add.tspan(line).newLine();
+          const id = element.id();
 
-        const matrix = el.transform();
-        const bbox = el.bbox();
-        // const transformedX = matrix.translateX;
-        // const transformedY = matrix.translateY - Math.round(bbox.height / 2);
-
-        // console.log(bbox.height, matrix, el.x(), el.y());
-
-        this.draw.text((add) => {
-          const content = this.data.items[index].text;
-          // console.log(el.width());
-          const lines = this.wrapText(content, el.width());
-
-          lines.forEach((line, index) => {
-            // console.log("f", add.width());
-            // add.x(add.x() + add.width());
-
-            const tspan = add.tspan(line).newLine();
-
-            // tspan.x(tspan.x() + tspan.width());
-
-            console.log("length", tspan.length());
-          });
-
-          // add.tspan();
-          add.font({
-            size: 24,
-          });
-          add.translate(el.x(), el.y() + 24);
+          // 设置文本对齐方式
+          if (id.includes("lt") || id.includes("lc") || id.includes("lb")) {
+            tspan.dx(0); // 左对齐
+          } else if (id.includes("rt") || id.includes("rc") || id.includes("rb")) {
+            tspan.dx(element.width() as number - textWidth); // 右对齐
+          } else {
+            tspan.dx((element.width() as number - textWidth) / 2); // 居中对齐
+          }
         });
 
-        console.log(this.data.items[index].text);
+        add.font({
+          size: 24,
+        });
+        add.translate(element.x() as number, element.y() as number + 24);
+      });
 
-        // 创建一个外部 div 元素
-        // const foreignObject = this.draw
-        //   .foreignObject(bbox.width, 24 * 1.5)
-        //   // .move(transformedX, transformedY)
-        //   // .cy(transformedY)
-        //   // .translate(transformedX, transformedY);
-        //   .translate(el.x(), el.y());
-        // foreignObject.add(
-        //   `<div xmlns="http://www.w3.org/1999/xhtml" style="font-size: 24px; color: red;">重叠富文本 ${index}</div>`
-        // );
-      }
-
-      index++;
-    }
+      console.log(this.data.items[index].text);
+    });
   }
 
   addItem(index: number) {
