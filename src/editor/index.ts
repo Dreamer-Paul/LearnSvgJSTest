@@ -1,10 +1,11 @@
 import { Path, SVG, Text, type Svg } from "@svgdotjs/svg.js";
 import { debounce } from "lodash";
+import SmartArtData, { type ISmartArtData } from "./data";
 
 interface SmartArtEditorProps {
   el: string;
   template: string;
-  data: SmartArtData;
+  data: ISmartArtData;
   onInputPositionChange: (position: {
     className: string;
     width: number;
@@ -16,22 +17,9 @@ interface SmartArtEditorProps {
   onUpdateText: (fn: any) => void;
 }
 
-interface SmartArtData {
-  title: string;
-  items: SmartArtDataItem[];
-}
-
-interface SmartArtDataItem {
-  text: string;
-}
-
 class SmartArtEditor {
-  // private el: string;
   private template: string;
-  private data: SmartArtData = {
-    title: "",
-    items: [],
-  };
+  private data: SmartArtData;
   private draw: Svg;
   private svgPosition: { left: number; top: number };
   private onInputPositionChange: (position: {
@@ -44,13 +32,18 @@ class SmartArtEditor {
   }) => void;
   private onUpdateText: (fn: any) => void;
 
+  private currentEditor: {
+    id: string;
+    index: string | number | undefined;
+  } | undefined;
+
   constructor(props: SmartArtEditorProps) {
     // this.el = props.el;
     this.template = props.template;
     this.onInputPositionChange = props.onInputPositionChange;
     this.onUpdateText = props.onUpdateText;
 
-    this.setData(props.data);
+    this.data = new SmartArtData(props.data);
 
     this.svgPosition = { left: 0, top: 0 };
 
@@ -124,6 +117,16 @@ class SmartArtEditor {
 
       // 文本元素
       if (id.includes("tx-")) {
+        this.currentEditor = {
+          id,
+          index: id.split("-").pop(),
+        };
+
+        // 临时修复 index 的问题
+        if (!Number.isNaN(Number(this.currentEditor.index))) {
+          this.currentEditor.index = Number(this.currentEditor.index);
+        }
+
         const target = ev.target;
         const rect = target.getBoundingClientRect();
         console.log("rect", rect, this.svgPosition, target);
@@ -160,14 +163,14 @@ class SmartArtEditor {
 
       // id 示例：bt-cc-add-1，意味着我需要插入一个节点到索引为 1 的位置（0 后面插一个）
       if (id.includes("add")) {
-        this.addItem(index); // 添加项目
+        this.data.addItem(index); // 添加项目
         // this.draw.clear(); // 清空画布
         // await this.getTemplate(this.template); // 替换模板
         this.drawContext(); // 重新绘制内容
       }
       // id 示例：bt-cc-remove-2 意味着我需要删除索引为 1 的元素
       else if (id.includes("remove")) {
-        this.removeItem(index); // 删除项目
+        this.data.removeItem(index); // 删除项目
 
         // console.log(index, this.data.items);
         // this.draw.clear(); // 清空画布
@@ -177,24 +180,9 @@ class SmartArtEditor {
     });
   }
 
-  /**
-   * 设置需要展示的数据
-   * @param {object} nextData
-   */
-  setData(nextData: SmartArtData) {
-    this.data = nextData;
-  }
-
-  /**
-   * 获取当前内容数量
-   */
-  get count() {
-    return this.data.items.length;
-  }
-
   async getTemplate(templateName: string) {
     // 获取 SVG 文件内容
-    const response = await fetch(`/${templateName}--family--${this.count}.svg`);
+    const response = await fetch(`/${templateName}--family--${this.data.count}.svg`);
     const svgText = await response.text();
 
     // 解析 SVG 文件内容并添加到画布中
@@ -208,17 +196,14 @@ class SmartArtEditor {
     return [svgElement.outerHTML, width, height];
   }
 
+  /**
+   * 根据当前模板重新绘制图形到画板
+   */
   async drawContext() {
-    this.draw.rect("100%", "100%").fill("beige");
-
     const [str, width, height] = await this.getTemplate(this.template);
 
     this.draw.clear();
-    this.draw
-      .svg(str as string)
-      .x(0)
-      .y(0);
-
+    this.draw.svg(str as string);
     this.draw.size(width, height);
 
     this.fillItemText();
@@ -274,7 +259,7 @@ class SmartArtEditor {
         content = "标题（假的）";
       } else {
         const index = parseInt(id.split("-").pop() || "0", 10) - 1;
-        content = this.data.items[index].text;
+        content = this.data.getItemText(index);
       }
 
       element.attr({ "data-text": content || "" });
@@ -309,14 +294,6 @@ class SmartArtEditor {
     });
   }
 
-  addItem(index: number) {
-    this.data.items.splice(index - 1, 0, { text: "New Item" }); // 在指定索引后插入一个新项目
-  }
-
-  removeItem(index: number) {
-    this.data.items.splice(index - 1, 1); // 删除指定索引的项目
-  }
-
   // 更新文本
   updateText(className: string, text: string, width: number) {
     const textNode = this.draw.findOne(className) as Text;
@@ -324,6 +301,17 @@ class SmartArtEditor {
     // 更新 data-text
     const pathId = className?.replace(/^\./, "")?.replace(/-text/g, "");
     const pathNode = this.draw.findOne(`#${pathId}`);
+
+    console.log(pathId, this.currentEditor);
+
+    if (this.currentEditor) {
+      const { index } = this.currentEditor;
+
+      // Todo 暂时无法处理标题
+      if (index && typeof index === "number") {
+        this.data.updateItem(index - 1, { text });
+      }
+    }
 
     if (pathNode) {
       pathNode.attr({ "data-text": text || "" });
