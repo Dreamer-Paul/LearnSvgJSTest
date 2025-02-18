@@ -21,7 +21,6 @@ class SmartArtEditor {
   private template: string;
   private data: SmartArtData;
   private draw: Svg;
-  private svgPosition: { left: number; top: number };
   private onInputPositionChange: (position: {
     width: number;
     height: number;
@@ -45,8 +44,6 @@ class SmartArtEditor {
 
     this.data = new SmartArtData(props.data);
 
-    this.svgPosition = { left: 0, top: 0 };
-
     this.draw = SVG().addTo(props.el);
 
     this.drawContext();
@@ -58,8 +55,7 @@ class SmartArtEditor {
 
   // 初始化
   init() {
-    console.log("init", this.draw, this.svgPosition);
-    this.gegSvgPosition();
+    console.log("init", this.draw);
 
     document.addEventListener("click", (event) => {
       const target = event.target as HTMLElement;
@@ -85,24 +81,6 @@ class SmartArtEditor {
         });
       }
     });
-
-    window.addEventListener(
-      "scroll",
-      debounce(() => {
-        console.log("scroll", this.draw.node.getBoundingClientRect());
-
-        this.gegSvgPosition();
-      }, 300)
-    );
-  }
-
-  // 获取 svg 位置
-  gegSvgPosition() {
-    const rect = this.draw.node.getBoundingClientRect();
-    this.svgPosition = {
-      left: rect.left,
-      top: rect.top,
-    };
   }
 
   bindClickEvent() {
@@ -129,13 +107,13 @@ class SmartArtEditor {
 
         const target = ev.target;
         const rect = target.getBoundingClientRect();
-        console.log("rect", rect, this.svgPosition, target);
+        const svgRect = this.draw.node.getBoundingClientRect();
 
         this.onInputPositionChange({
           width: rect.width,
           height: rect.height,
-          x: rect.left - (this.svgPosition.left || 0),
-          y: rect.top - (this.svgPosition.top || 0),
+          x: rect.left - (svgRect.left || 0),
+          y: rect.top - (svgRect.top || 0),
           text: target.getAttribute("data-text") || "",
           className: id + "-text",
         });
