@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { onMounted, reactive } from "vue";
-import { Svg } from "@svgdotjs/svg.js";
 import SmartArtEditor from "../editor";
-
-defineProps<{ msg: string }>();
 
 const inputWrap = reactive({
   width: 0,
@@ -15,7 +12,6 @@ const inputWrap = reactive({
   textAlign: "",
 });
 
-let draw: Svg;
 let drawInst: SmartArtEditor;
 
 onMounted(async () => {
@@ -67,29 +63,31 @@ const exportPNG = () => {
 </script>
 
 <template>
-  <h1>{{ msg }}</h1>
-
-  <div class="svg--conatiner">
-    <div id="svg-container"></div>
-
-    <!-- 输入框 -->
-    <div
-      class="svg--input__container"
-      :style="{
-        width: inputWrap?.width + 'px',
-        height: inputWrap?.height + 'px',
-        left: inputWrap?.x + 'px',
-        top: inputWrap?.y + 'px',
-      }"
-    >
-      <textarea
-        class="svg--input"
-        :style="{ textAlign: inputWrap.textAlign }"
-        v-model="inputWrap.text"
-      ></textarea>
+  <section>
+    <h2>SvgJS</h2>
+    <div class="controls">
+      <button @click="exportSVG">导出为 SVG</button>
+      <button @click="exportPNG">导出为 PNG</button>
     </div>
-  </div>
+    <div class="svg--conatiner">
+      <div id="svg-container"></div>
 
-  <button @click="exportSVG">导出为 SVG</button>
-  <button @click="exportPNG">导出为 PNG</button>
+      <!-- 输入框 -->
+      <div
+        class="svg--input__container"
+        :style="{
+          width: inputWrap?.width + 'px',
+          height: inputWrap?.height + 'px',
+          left: inputWrap?.x + 'px',
+          top: inputWrap?.y + 'px',
+        }"
+      >
+        <textarea
+          class="svg--input"
+          :style="{ textAlign: inputWrap.textAlign }"
+          v-model="inputWrap.text"
+        ></textarea>
+      </div>
+    </div>
+  </section>
 </template>

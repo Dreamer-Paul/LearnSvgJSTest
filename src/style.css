@@ -24,10 +24,6 @@ a:hover {
 
 body {
   margin: 0;
-  /* display: flex;
-  place-items: center; */
-  /* min-width: 320px;
-  min-height: 100vh; */
 }
 
 h1 {
@@ -69,10 +65,11 @@ button:focus-visible {
 #svg-container tspan {
   pointer-events: none;
 }
+
 .svg--conatiner {
   position: relative;
-  border: 1px solid blue;
 }
+
 .svg--input__container {
   position: absolute;
   margin: 0;
@@ -102,4 +99,21 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+section {
+  padding: 1em;
+  margin-bottom: 2em;
+  border: 1px solid #ccc;
+}
+
+section h2 {
+  margin-top: 0;
+}
+
+.controls {
+  gap: .5em;
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 1em;
 }

@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import Edit from "./components/Edit.vue";
-import HelloWorld from "./components/HelloWorld.vue";
+import FablicTest from "./components/FabricTest.vue";
+import SvgTest from "./components/SvgTest.vue";
 </script>
 
 <template>
-  <HelloWorld msg="Vite + Vue" />
-  <hr />
-
-  <Edit />
+  <SvgTest />
+  <FablicTest />
 </template>
