@@ -54,11 +54,18 @@ onMounted(async () => {
 
   console.log("drawInst", drawInst);
 });
+
+const exportSVG = () => {
+  drawInst?.exportSVG();
+};
+
+const exportPNG = () => {
+  drawInst?.exportPNG();
+};
 </script>
 
 <template>
   <h1>{{ msg }}</h1>
-  <h2>{{ inputWrap.text }}</h2>
 
   <div class="svg--conatiner">
     <div id="svg-container"></div>
@@ -83,40 +90,4 @@ onMounted(async () => {
 
   <button @click="exportSVG">导出为 SVG</button>
   <button @click="exportPNG">导出为 PNG</button>
-
-  <svg
-    width="100%"
-    height="100%"
-    version="1.1"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <text
-      x="200"
-      y="50"
-      text-anchor="start"
-      fill="black"
-      style="font-size: 40px"
-    >
-      2我是中国人
-    </text>
-    <text
-      x="200"
-      y="100"
-      text-anchor="middle"
-      fill="black"
-      style="font-size: 40px"
-    >
-      3我是中国人
-    </text>
-    <text
-      x="200"
-      y="150"
-      text-anchor="end"
-      fill="black"
-      style="font-size: 40px"
-    >
-      4我是中国人
-    </text>
-    <path d="M200,0 V200 M0,100 H400" stroke="red" />
-  </svg>
 </template>
