@@ -225,23 +225,22 @@ class SmartArtEditor {
   fillItemText() {
     const elements = this.draw.find("[id^='tx-']");
 
-    elements.each((el, index) => {
+    elements.each((el) => {
       const element = el as Path;
-      element.attr({ "data-text": this.data.items[index].text || "" });
-
       const id = element.id();
-      // Todo 这里插入的顺序会反，怎么办
-      console.log("id", id);
+
+      let content = "";
+
+      if (id.includes("title")) {
+        content = "标题（假的）";
+      } else {
+        const index = parseInt(id.split("-").pop() || "0", 10) - 1;
+        content = this.data.items[index].text;
+      }
+
+      element.attr({ "data-text": content || "" });
 
       this.draw.text((add) => {
-        let content = "";
-
-        if (id.includes("title")) {
-          content = "标题（假的）";
-        } else {
-          content = this.data.items[index].text;
-        }
-
         const lines = this.wrapText(content, element.width() as number);
 
         lines.forEach((line) => {
@@ -262,13 +261,11 @@ class SmartArtEditor {
         });
         add.translate(element.x() as number, element.y() as number + 24);
       });
-
-      console.log(this.data.items[index].text);
     });
   }
 
   addItem(index: number) {
-    this.data.items.splice(index - 1, 0, { text: "" }); // 在指定索引后插入一个新项目
+    this.data.items.splice(index - 1, 0, { text: "New Item" }); // 在指定索引后插入一个新项目
   }
 
   removeItem(index: number) {
