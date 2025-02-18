@@ -40,6 +40,14 @@ class SmartArtData {
       ...values,
     };
   }
+
+  getTitleText() {
+    return this.data.title;
+  }
+
+  updateTitle(text: string) {
+    this.data.title = text;
+  }
 }
 
 export default SmartArtData;

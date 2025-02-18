@@ -130,7 +130,7 @@ class SmartArtEditor {
           text:
             typeof this.currentEditor.index === "number"
               ? this.data.getItemText(this.currentEditor.index - 1)
-              : "",
+              : this.data.getTitleText(),
           className: id + "-text",
           textAlign,
         });
@@ -302,7 +302,7 @@ class SmartArtEditor {
       let content = "";
 
       if (id.includes("title")) {
-        content = "标题（假的）";
+        content = this.data.getTitleText();
       } else {
         const index = parseInt(id.split("-").pop() || "0", 10) - 1;
         content = this.data.getItemText(index);
@@ -355,9 +355,10 @@ class SmartArtEditor {
     if (this.currentEditor) {
       const { index } = this.currentEditor;
 
-      // Todo 暂时无法处理标题
       if (index && typeof index === "number") {
         this.data.updateItem(index - 1, { text });
+      } else {
+        this.data.updateTitle(text);
       }
     }
 
