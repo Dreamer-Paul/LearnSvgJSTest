@@ -68,6 +68,31 @@ class SmartArtEditor {
     console.log("init", this.draw, this.svgPosition);
     this.gegSvgPosition();
 
+    document.addEventListener("click", (event) => {
+      const target = event.target as HTMLElement;
+      if (
+        !target.closest("svg") &&
+        target.tagName !== "INPUT" &&
+        target.tagName !== "TEXTAREA"
+      ) {
+        this.onUpdateText(
+          (textClassName: string, text: string, width: number) => {
+            console.log("text", text, textClassName);
+            this.updateText(`.${textClassName}`, text, width);
+          }
+        );
+
+        this.onInputPositionChange({
+          width: 0,
+          height: 0,
+          x: 0,
+          y: 0,
+          text: "",
+          className: "",
+        });
+      }
+    });
+
     window.addEventListener(
       "scroll",
       debounce(() => {
@@ -115,10 +140,12 @@ class SmartArtEditor {
         return;
       }
 
-      this.onUpdateText((textClassName: string, text: string) => {
-        console.log("text", text, textClassName);
-        this.updateText(`.${textClassName}`, text);
-      });
+      this.onUpdateText(
+        (textClassName: string, text: string, width: number) => {
+          console.log("text", text, textClassName);
+          this.updateText(`.${textClassName}`, text, width);
+        }
+      );
 
       this.onInputPositionChange({
         width: 0,
@@ -291,7 +318,7 @@ class SmartArtEditor {
   }
 
   // 更新文本
-  updateText(className: string, text: string) {
+  updateText(className: string, text: string, width: number) {
     const textNode = this.draw.findOne(className) as Text;
 
     // 更新 data-text
@@ -305,7 +332,7 @@ class SmartArtEditor {
     if (textNode) {
       textNode.text((add) => {
         // console.log(el.width());
-        const lines = this.wrapText(text, 156);
+        const lines = this.wrapText(text, width);
         lines.forEach((line) => {
           add.tspan(line.text).newLine();
         });

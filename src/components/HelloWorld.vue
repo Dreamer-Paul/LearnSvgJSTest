@@ -47,7 +47,7 @@ onMounted(async () => {
     },
     onUpdateText: (callback) => {
       if (inputWrap?.text && callback) {
-        callback(inputWrap.className, inputWrap?.text);
+        callback(inputWrap.className, inputWrap?.text, inputWrap?.width);
       }
     },
   });
