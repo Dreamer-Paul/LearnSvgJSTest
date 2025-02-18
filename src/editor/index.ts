@@ -113,8 +113,6 @@ class SmartArtEditor {
         const rect = target.getBoundingClientRect();
         const svgRect = this.draw.node.getBoundingClientRect();
 
-        debugger;
-
         const textAlign =
           id.includes("lt") || id.includes("lc") || id.includes("lb")
             ? "left"
@@ -129,7 +127,10 @@ class SmartArtEditor {
           height: rect.height,
           x: rect.left - (svgRect.left || 0),
           y: rect.top - (svgRect.top || 0),
-          text: target.getAttribute("data-text") || "",
+          text:
+            typeof this.currentEditor.index === "number"
+              ? this.data.getItemText(this.currentEditor.index - 1)
+              : "",
           className: id + "-text",
           textAlign,
         });
@@ -307,7 +308,7 @@ class SmartArtEditor {
         content = this.data.getItemText(index);
       }
 
-      element.attr({ "data-text": content || "" });
+      // element.attr({ "data-text": content || "" });
 
       const elementWidth = element.width() as number;
       this.drawText({
@@ -351,12 +352,6 @@ class SmartArtEditor {
   updateText(className: string, text: string, width: number) {
     const textNode = this.draw.findOne(className) as Text;
 
-    // 更新 data-text
-    const pathId = className?.replace(/^\./, "")?.replace(/-text/g, "");
-    const pathNode = this.draw.findOne(`#${pathId}`);
-
-    console.log(pathId, this.currentEditor);
-
     if (this.currentEditor) {
       const { index } = this.currentEditor;
 
@@ -364,10 +359,6 @@ class SmartArtEditor {
       if (index && typeof index === "number") {
         this.data.updateItem(index - 1, { text });
       }
-    }
-
-    if (pathNode) {
-      pathNode.attr({ "data-text": text || "" });
     }
 
     if (textNode) {
