@@ -31,10 +31,12 @@ class SmartArtEditor {
   }) => void;
   private onUpdateText: (fn: any) => void;
 
-  private currentEditor: {
-    id: string;
-    index: string | number | undefined;
-  } | undefined;
+  private currentEditor:
+    | {
+        id: string;
+        index: string | number | undefined;
+      }
+    | undefined;
 
   constructor(props: SmartArtEditorProps) {
     // this.el = props.el;
@@ -114,7 +116,10 @@ class SmartArtEditor {
           height: rect.height,
           x: rect.left - (svgRect.left || 0),
           y: rect.top - (svgRect.top || 0),
-          text: target.getAttribute("data-text") || "",
+          text:
+            typeof this.currentEditor.index === "number"
+              ? this.data.getItemText(this.currentEditor.index - 1)
+              : "",
           className: id + "-text",
         });
 
@@ -160,7 +165,9 @@ class SmartArtEditor {
 
   async getTemplate(templateName: string) {
     // 获取 SVG 文件内容
-    const response = await fetch(`/${templateName}--family--${this.data.count}.svg`);
+    const response = await fetch(
+      `/${templateName}--family--${this.data.count}.svg`
+    );
     const svgText = await response.text();
 
     // 解析 SVG 文件内容并添加到画布中
@@ -240,8 +247,6 @@ class SmartArtEditor {
         content = this.data.getItemText(index);
       }
 
-      element.attr({ "data-text": content || "" });
-
       this.draw.text((add) => {
         const lines = this.wrapText(content, element.width() as number);
 
@@ -276,12 +281,6 @@ class SmartArtEditor {
   updateText(className: string, text: string, width: number) {
     const textNode = this.draw.findOne(className) as Text;
 
-    // 更新 data-text
-    const pathId = className?.replace(/^\./, "")?.replace(/-text/g, "");
-    const pathNode = this.draw.findOne(`#${pathId}`);
-
-    console.log(pathId, this.currentEditor);
-
     if (this.currentEditor) {
       const { index } = this.currentEditor;
 
@@ -289,10 +288,6 @@ class SmartArtEditor {
       if (index && typeof index === "number") {
         this.data.updateItem(index - 1, { text });
       }
-    }
-
-    if (pathNode) {
-      pathNode.attr({ "data-text": text || "" });
     }
 
     if (textNode) {

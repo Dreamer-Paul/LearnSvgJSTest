@@ -39,8 +39,6 @@ class SmartArtData {
       ...this.data.items[index],
       ...values,
     };
-
-    console.log("items", this.data.items);
   }
 }
 
