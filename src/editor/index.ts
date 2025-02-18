@@ -1,4 +1,4 @@
-import { Path, SVG, type Svg } from "@svgdotjs/svg.js";
+import { Path, SVG, Text, type Svg } from "@svgdotjs/svg.js";
 import { debounce } from "lodash";
 
 interface SmartArtEditorProps {
@@ -6,12 +6,14 @@ interface SmartArtEditorProps {
   template: string;
   data: SmartArtData;
   onInputPositionChange: (position: {
+    className: string;
     width: number;
     height: number;
     x: number;
     y: number;
     text: string;
   }) => void;
+  onUpdateText: (fn: any) => void;
 }
 
 interface SmartArtData {
@@ -38,12 +40,15 @@ class SmartArtEditor {
     x: number;
     y: number;
     text: string;
+    className: string;
   }) => void;
+  private onUpdateText: (fn: any) => void;
 
   constructor(props: SmartArtEditorProps) {
     // this.el = props.el;
     this.template = props.template;
     this.onInputPositionChange = props.onInputPositionChange;
+    this.onUpdateText = props.onUpdateText;
 
     this.setData(props.data);
 
@@ -96,7 +101,7 @@ class SmartArtEditor {
       if (id.includes("tx-")) {
         const target = ev.target;
         const rect = target.getBoundingClientRect();
-        console.log("rect", rect, this.svgPosition);
+        console.log("rect", rect, this.svgPosition, target);
 
         this.onInputPositionChange({
           width: rect.width,
@@ -104,10 +109,16 @@ class SmartArtEditor {
           x: rect.left - (this.svgPosition.left || 0),
           y: rect.top - (this.svgPosition.top || 0),
           text: target.getAttribute("data-text") || "",
+          className: id + "-text",
         });
 
         return;
       }
+
+      this.onUpdateText((textClassName: string, text: string) => {
+        console.log("text", text, textClassName);
+        this.updateText(`.${textClassName}`, text);
+      });
 
       this.onInputPositionChange({
         width: 0,
@@ -115,6 +126,7 @@ class SmartArtEditor {
         x: 0,
         y: 0,
         text: "",
+        className: "",
       });
 
       const index = parseInt(id.split("-").pop() || "0", 10);
@@ -255,6 +267,8 @@ class SmartArtEditor {
           });
 
           // add.tspan();
+          const elId = el?.node?.id;
+          add.addClass(`${elId}-text`);
           add.font({
             size: 24,
           });
@@ -285,6 +299,30 @@ class SmartArtEditor {
 
   removeItem(index: number) {
     this.data.items.splice(index - 1, 1); // 删除指定索引的项目
+  }
+
+  // 更新文本
+  updateText(className: string, text: string) {
+    const textNode = this.draw.findOne(className) as Text;
+
+    // 更新 data-text
+    const pathId = className?.replace(/^\./, "")?.replace(/-text/g, "");
+    const pathNode = this.draw.findOne(`#${pathId}`);
+
+    if (pathNode) {
+      pathNode.attr({ "data-text": text || "" });
+    }
+
+    if (textNode) {
+      textNode.text((add) => {
+        // console.log(el.width());
+        const lines = this.wrapText(text, 156);
+
+        lines.forEach((line) => {
+          add.tspan(line).newLine();
+        });
+      });
+    }
   }
 
   exportSVG = () => {

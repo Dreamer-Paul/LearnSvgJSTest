@@ -11,6 +11,7 @@ const inputWrap = reactive({
   x: 0,
   y: 0,
   text: "",
+  className: "",
 });
 
 let draw: Svg;
@@ -35,11 +36,19 @@ onMounted(async () => {
       ],
     },
     onInputPositionChange: (inputPosition) => {
+      console.log("inputPosition", inputPosition);
+
       inputWrap.x = inputPosition.x;
       inputWrap.y = inputPosition.y;
       inputWrap.height = inputPosition.height;
       inputWrap.width = inputPosition.width;
       inputWrap.text = inputPosition.text;
+      inputWrap.className = inputPosition.className;
+    },
+    onUpdateText: (callback) => {
+      if (inputWrap?.text && callback) {
+        callback(inputWrap.className, inputWrap?.text);
+      }
     },
   });
 
@@ -49,6 +58,7 @@ onMounted(async () => {
 
 <template>
   <h1>{{ msg }}</h1>
+  <h2>{{ inputWrap.text }}</h2>
 
   <div class="svg--conatiner">
     <div id="svg-container"></div>
@@ -66,7 +76,7 @@ onMounted(async () => {
       <textarea
         class="svg--input"
         style="text-align: left"
-        :value="inputWrap.text"
+        v-model="inputWrap.text"
       ></textarea>
     </div>
   </div>
