@@ -1,5 +1,4 @@
 import { Path, SVG, Text, type Svg } from "@svgdotjs/svg.js";
-import { debounce } from "lodash";
 import SmartArtData, { type ISmartArtData } from "./data";
 
 interface SmartArtEditorProps {
@@ -13,6 +12,7 @@ interface SmartArtEditorProps {
     x: number;
     y: number;
     text: string;
+    textAlign: string;
   }) => void;
   onUpdateText: (fn: any) => void;
 }
@@ -28,13 +28,16 @@ class SmartArtEditor {
     y: number;
     text: string;
     className: string;
+    textAlign: string;
   }) => void;
   private onUpdateText: (fn: any) => void;
 
-  private currentEditor: {
-    id: string;
-    index: string | number | undefined;
-  } | undefined;
+  private currentEditor:
+    | {
+        id: string;
+        index: string | number | undefined;
+      }
+    | undefined;
 
   constructor(props: SmartArtEditorProps) {
     // this.el = props.el;
@@ -78,6 +81,7 @@ class SmartArtEditor {
           y: 0,
           text: "",
           className: "",
+          textAlign: "",
         });
       }
     });
@@ -109,6 +113,17 @@ class SmartArtEditor {
         const rect = target.getBoundingClientRect();
         const svgRect = this.draw.node.getBoundingClientRect();
 
+        debugger;
+
+        const textAlign =
+          id.includes("lt") || id.includes("lc") || id.includes("lb")
+            ? "left"
+            : id.includes("rt") || id.includes("rc") || id.includes("rb")
+            ? "right"
+            : id.includes("ct") || id.includes("cc") || id.includes("cb")
+            ? "center"
+            : "left";
+
         this.onInputPositionChange({
           width: rect.width,
           height: rect.height,
@@ -116,6 +131,7 @@ class SmartArtEditor {
           y: rect.top - (svgRect.top || 0),
           text: target.getAttribute("data-text") || "",
           className: id + "-text",
+          textAlign,
         });
 
         return;
@@ -135,6 +151,7 @@ class SmartArtEditor {
         y: 0,
         text: "",
         className: "",
+        textAlign: "",
       });
 
       const index = parseInt(id.split("-").pop() || "0", 10);
@@ -160,7 +177,9 @@ class SmartArtEditor {
 
   async getTemplate(templateName: string) {
     // 获取 SVG 文件内容
-    const response = await fetch(`/${templateName}--family--${this.data.count}.svg`);
+    const response = await fetch(
+      `/${templateName}--family--${this.data.count}.svg`
+    );
     const svgText = await response.text();
 
     // 解析 SVG 文件内容并添加到画布中
@@ -221,6 +240,54 @@ class SmartArtEditor {
     return lines;
   }
 
+  // 绘制文字
+  drawText({
+    content,
+    width,
+    id,
+    element,
+    textNode,
+  }: {
+    content: string;
+    width: number;
+    id: string;
+    element?: Path;
+    textNode?: Text;
+  }) {
+    (textNode || this.draw).text((add) => {
+      const lines = this.wrapText(content, width);
+
+      lines.forEach((line) => {
+        const tspan = add.tspan(line.text).newLine();
+
+        // 设置文本对齐方式
+        if (id.includes("lt") || id.includes("lc") || id.includes("lb")) {
+          tspan.dx(0); // 左对齐
+        } else if (
+          id.includes("rt") ||
+          id.includes("rc") ||
+          id.includes("rb")
+        ) {
+          tspan.dx(width - line.width); // 右对齐
+        } else {
+          tspan.dx((width - line.width) / 2); // 居中对齐
+        }
+      });
+
+      if (!textNode) {
+        add.addClass(`${id}-text`);
+      }
+
+      add.font({
+        size: 24,
+      });
+
+      if (element) {
+        add.translate(element.x() as number, (element.y() as number) + 24);
+      }
+    });
+  }
+
   /**
    * 填入文本到 Svg 图
    */
@@ -242,33 +309,41 @@ class SmartArtEditor {
 
       element.attr({ "data-text": content || "" });
 
-      this.draw.text((add) => {
-        const lines = this.wrapText(content, element.width() as number);
-
-        lines.forEach((line) => {
-          const tspan = add.tspan(line.text).newLine();
-
-          // 设置文本对齐方式
-          if (id.includes("lt") || id.includes("lc") || id.includes("lb")) {
-            tspan.dx(0); // 左对齐
-          } else if (
-            id.includes("rt") ||
-            id.includes("rc") ||
-            id.includes("rb")
-          ) {
-            tspan.dx((element.width() as number) - line.width); // 右对齐
-          } else {
-            tspan.dx(((element.width() as number) - line.width) / 2); // 居中对齐
-          }
-        });
-
-        const elId = el?.node?.id;
-        add.addClass(`${elId}-text`);
-        add.font({
-          size: 24,
-        });
-        add.translate(element.x() as number, (element.y() as number) + 24);
+      const elementWidth = element.width() as number;
+      this.drawText({
+        content: content,
+        width: elementWidth,
+        id,
+        element,
       });
+
+      // this.draw.text((add) => {
+      //   const lines = this.wrapText(content, element.width() as number);
+
+      //   lines.forEach((line) => {
+      //     const tspan = add.tspan(line.text).newLine();
+
+      //     // 设置文本对齐方式
+      //     if (id.includes("lt") || id.includes("lc") || id.includes("lb")) {
+      //       tspan.dx(0); // 左对齐
+      //     } else if (
+      //       id.includes("rt") ||
+      //       id.includes("rc") ||
+      //       id.includes("rb")
+      //     ) {
+      //       tspan.dx((element.width() as number) - line.width); // 右对齐
+      //     } else {
+      //       tspan.dx(((element.width() as number) - line.width) / 2); // 居中对齐
+      //     }
+      //   });
+
+      //   const elId = el?.node?.id;
+      //   add.addClass(`${elId}-text`);
+      //   add.font({
+      //     size: 24,
+      //   });
+      //   add.translate(element.x() as number, (element.y() as number) + 24);
+      // });
     });
   }
 
@@ -296,13 +371,15 @@ class SmartArtEditor {
     }
 
     if (textNode) {
-      textNode.text((add) => {
-        // console.log(el.width());
-        const lines = this.wrapText(text, width);
-        lines.forEach((line) => {
-          add.tspan(line.text).newLine();
-        });
-      });
+      this.drawText({ content: text, width, id: className, textNode });
+
+      // textNode.text((add) => {
+      //   // console.log(el.width());
+      //   const lines = this.wrapText(text, width);
+      //   lines.forEach((line) => {
+      //     add.tspan(line.text).newLine();
+      //   });
+      // });
     }
   }
 

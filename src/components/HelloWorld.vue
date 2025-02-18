@@ -12,6 +12,7 @@ const inputWrap = reactive({
   y: 0,
   text: "",
   className: "",
+  textAlign: "",
 });
 
 let draw: Svg;
@@ -44,6 +45,7 @@ onMounted(async () => {
       inputWrap.width = inputPosition.width;
       inputWrap.text = inputPosition.text;
       inputWrap.className = inputPosition.className;
+      inputWrap.textAlign = inputPosition.textAlign;
     },
     onUpdateText: (callback) => {
       if (inputWrap?.text && callback) {
@@ -82,7 +84,7 @@ const exportPNG = () => {
     >
       <textarea
         class="svg--input"
-        style="text-align: left"
+        :style="{ textAlign: inputWrap.textAlign }"
         v-model="inputWrap.text"
       ></textarea>
     </div>
