@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive } from "vue";
+import { onMounted, reactive, type CSSProperties } from "vue";
 import SmartArtEditor from "../editor";
 
 const inputWrap = reactive({
@@ -9,7 +9,7 @@ const inputWrap = reactive({
   y: 0,
   text: "",
   className: "",
-  textAlign: "",
+  textAlign: undefined as CSSProperties["text-align"] | undefined,
 });
 
 let drawInst: SmartArtEditor;
@@ -41,7 +41,7 @@ onMounted(async () => {
       inputWrap.width = inputPosition.width;
       inputWrap.text = inputPosition.text;
       inputWrap.className = inputPosition.className;
-      inputWrap.textAlign = inputPosition.textAlign;
+      inputWrap.textAlign = inputPosition.textAlign as CSSProperties["text-align"];
     },
     onUpdateText: (callback) => {
       if (inputWrap?.text && callback) {

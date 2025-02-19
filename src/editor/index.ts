@@ -1,5 +1,6 @@
 import { Path, SVG, Text, type Svg } from "@svgdotjs/svg.js";
 import SmartArtData, { type ISmartArtData } from "./data";
+import SmartArtIcon from "./icon";
 
 interface SmartArtEditorProps {
   el: string;
@@ -21,6 +22,7 @@ class SmartArtEditor {
   private template: string;
   private data: SmartArtData;
   private draw: Svg;
+  private icon: SmartArtIcon;
   private onInputPositionChange: (position: {
     width: number;
     height: number;
@@ -45,9 +47,10 @@ class SmartArtEditor {
     this.onInputPositionChange = props.onInputPositionChange;
     this.onUpdateText = props.onUpdateText;
 
-    this.data = new SmartArtData(props.data);
-
     this.draw = SVG().addTo(props.el);
+
+    this.data = new SmartArtData(props.data);
+    this.icon = new SmartArtIcon(this.draw);
 
     this.drawContext();
 
@@ -176,6 +179,23 @@ class SmartArtEditor {
     });
   }
 
+  async fetchIcon(iconName: string) {
+    // social-photobucket--logos--24x24.svg
+    const response = await fetch(`/icons/${iconName}`);
+
+    const svgText = await response.text();
+
+    // 解析 SVG 文件内容并添加到画布中
+    const parser = new DOMParser();
+    const svgDoc = parser.parseFromString(svgText, "image/svg+xml");
+    const svgElement = svgDoc.documentElement;
+
+    const width = Number(svgElement.getAttribute("width") || 0);
+    const height = Number(svgElement.getAttribute("height") || 0);
+
+    return [svgElement.children[0].outerHTML, width, height];
+  }
+
   async getTemplate(templateName: string) {
     // 获取 SVG 文件内容
     const response = await fetch(
@@ -188,10 +208,12 @@ class SmartArtEditor {
     const svgDoc = parser.parseFromString(svgText, "image/svg+xml");
     const svgElement = svgDoc.documentElement;
 
+    console.log(svgElement);
+
     const width = Number(svgElement.getAttribute("width") || 0);
     const height = Number(svgElement.getAttribute("height") || 0);
 
-    return [svgElement.outerHTML, width, height];
+    return [svgElement.children[0].outerHTML, width, height];
   }
 
   /**
@@ -200,11 +222,27 @@ class SmartArtEditor {
   async drawContext() {
     const [str, width, height] = await this.getTemplate(this.template);
 
+    // Todo: 临时操作
+    const [icon] = await this.icon.fetchIcon("social-photobucket--logos--24x24.svg");
+
     this.draw.clear();
     this.draw.svg(str as string);
     this.draw.size(width, height);
 
+    // 设置渐变填充
+    const gradient = this.draw.gradient('linear', (add) => {
+      add.stop(0, '#ff0000');
+      add.stop(1, '#0000ff');
+    });
+
+    const paths = this.draw.find("#lines path");
+
+    paths.each((item) => {
+      item.fill(gradient);
+    });
+
     this.fillItemText();
+    this.icon.drawIcons(icon);
   }
 
   wrapText(text: string, width: number) {
@@ -255,7 +293,9 @@ class SmartArtEditor {
     element?: Path;
     textNode?: Text;
   }) {
-    (textNode || this.draw).text((add) => {
+    const group = this.draw.group(); // 创建一个 g 元素
+
+    (textNode || group).text((add) => {
       const lines = this.wrapText(content, width);
 
       lines.forEach((line) => {
@@ -287,6 +327,10 @@ class SmartArtEditor {
         add.translate(element.x() as number, (element.y() as number) + 24);
       }
     });
+
+    if (!textNode) {
+      group.addClass(`${id}-group`); // 为 g 元素添加类名
+    }
   }
 
   /**
