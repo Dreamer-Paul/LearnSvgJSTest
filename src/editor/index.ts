@@ -1,21 +1,37 @@
-import { Element as SvgJSElement, Path, SVG, Text, type Svg } from "@svgdotjs/svg.js";
+import {
+  Element as SvgJSElement,
+  Path,
+  SVG,
+  Text,
+  type Svg,
+} from "@svgdotjs/svg.js";
 import SmartArtData, { type ISmartArtData } from "./data";
 import SmartArtIcon from "./icon";
 import SmartArtStyle from "./style";
+
+interface IPosition {
+  className: string;
+  width: number;
+  height: number;
+  x: number;
+  y: number;
+  text: string;
+  textAlign: string;
+}
+
+export interface IButton {
+  x: number;
+  y: number;
+  type: "add" | "remove";
+  index: number;
+}
 
 interface SmartArtEditorProps {
   el: string;
   template: string;
   data: ISmartArtData;
-  onInputPositionChange: (position: {
-    className: string;
-    width: number;
-    height: number;
-    x: number;
-    y: number;
-    text: string;
-    textAlign: string;
-  }) => void;
+  onUpdateAddButtons: (v: IButton[]) => void;
+  onInputPositionChange: (position: IPosition) => void;
   onUpdateText: (fn: any) => void;
 }
 
@@ -29,15 +45,8 @@ class SmartArtEditor {
   private bgEl: SvgJSElement | undefined;
   private iconGroupsEl: SvgJSElement[] = [];
 
-  private onInputPositionChange: (position: {
-    width: number;
-    height: number;
-    x: number;
-    y: number;
-    text: string;
-    className: string;
-    textAlign: string;
-  }) => void;
+  private onUpdateAddButtons: (v: IButton[]) => void;
+  private onInputPositionChange: (position: IPosition) => void;
   private onUpdateText: (fn: any) => void;
 
   private currentEditor:
@@ -50,6 +59,7 @@ class SmartArtEditor {
   constructor(props: SmartArtEditorProps) {
     // this.el = props.el;
     this.template = props.template;
+    this.onUpdateAddButtons = props.onUpdateAddButtons;
     this.onInputPositionChange = props.onInputPositionChange;
     this.onUpdateText = props.onUpdateText;
 
@@ -235,9 +245,9 @@ class SmartArtEditor {
     this.style.setBackgroundStyle(this.bgEl, this.data.style);
 
     // 设置渐变填充
-    const gradient = this.draw.gradient('linear', (add) => {
-      add.stop(0, '#ff0000');
-      add.stop(1, '#0000ff');
+    const gradient = this.draw.gradient("linear", (add) => {
+      add.stop(0, "#ff0000");
+      add.stop(1, "#0000ff");
     });
 
     // const paths = this.draw.find("#lines path");
@@ -254,6 +264,38 @@ class SmartArtEditor {
 
     this.styleIcon();
     this.styleRect();
+
+    // 获取添加和删除的按钮
+    const btnRectEls = this.draw.find("[id^='bt-']");
+
+    const bbb: IButton[] = [];
+
+    btnRectEls.each((item) => {
+      const id = item.id();
+      const index = parseInt(id.split("-").pop() || "0", 10) - 1;
+
+      if (id.includes("add")) {
+        bbb.push({
+          x: item.x() as number,
+          y: item.y() as number,
+          type: "add",
+          index,
+        });
+
+        item.remove();
+      } else if (id.includes("remove")) {
+        bbb.push({
+          x: item.x() as number,
+          y: item.y() as number,
+          type: "remove",
+          index,
+        });
+
+        item.remove();
+      }
+    });
+
+    this.onUpdateAddButtons(bbb);
   }
 
   styleIcon() {
@@ -491,6 +533,15 @@ class SmartArtEditor {
     };
     img.src = "data:image/svg+xml;base64," + btoa(svgData);
   };
+
+  addItem(index: number) {
+    this.data.addItem(index);
+    this.drawContext();
+  }
+  removeItem(index: number) {
+    this.data.removeItem(index);
+    this.drawContext();
+  }
 }
 
 export default SmartArtEditor;

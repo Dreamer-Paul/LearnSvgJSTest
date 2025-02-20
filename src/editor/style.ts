@@ -48,20 +48,41 @@ const styleList: ISmartArtStyle[] = [
   {
     name: "test3",
     background: {
-      color: "#D1F8EF",
+      color: "#FFEDFA",
     },
     rect: {
       fill: {
-        color: "#A1E3F9",
+        color: "#fff",
       },
       stroke: {
-        color: "#3674B5",
+        color: "#A1E3F9",
         width: 2,
       },
     },
     icon: {
       stroke: {
-        color: "#fff",
+        color: "#3674B5",
+        width: 2,
+      },
+    },
+  },
+  {
+    name: "test4",
+    background: {
+      color: "#FFF2AF",
+    },
+    rect: {
+      fill: {
+        color: "#DAD2FF",
+      },
+      stroke: {
+        color: "#493D9E",
+        width: 2,
+      },
+    },
+    icon: {
+      stroke: {
+        color: "#B2A5FF",
         width: 2,
       },
     },

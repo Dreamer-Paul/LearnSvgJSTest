@@ -33,11 +33,11 @@ class SmartArtData {
   }
 
   addItem(index: number) {
-    this.data.items.splice(index - 1, 0, { text: "New Item" });
+    this.data.items.splice(index, 0, { text: "New Item" });
   }
 
   removeItem(index: number) {
-    this.data.items.splice(index - 1, 1);
+    this.data.items.splice(index, 1);
   }
 
   updateItem(index: number, values: Partial<ISmartArtDataItem>) {
