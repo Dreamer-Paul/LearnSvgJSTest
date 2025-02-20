@@ -1,4 +1,4 @@
-import { type Element, type Svg } from "@svgdotjs/svg.js";
+import { G, type Element, type Svg } from "@svgdotjs/svg.js";
 import type SmartArtData from "./data";
 
 export interface ISmartArtDataItem {
@@ -77,6 +77,8 @@ class SmartArtIcon {
     const iconGroup = this.draw.group();
     iconGroup.addClass("ic-group");
 
+    const groups: G[] = [];
+
     elements.each((el) => {
       const id = el.id();
       const index = parseInt(id.split("-").pop() || "0", 10) - 1;
@@ -97,24 +99,25 @@ class SmartArtIcon {
       const elHeight = el.height() as number;
 
       const g = iconGroup.group();
-      g.stroke({ color: "#fff", width: 2 }).fill("none");
       const iconElement = g.svg(icon).first();
 
       // 等比缩放图标到 48 的宽度
       const scale = elWidth / (iconElement.width() as number);
       iconElement.size(elWidth, (iconElement.height() as number) * scale);
 
+      console.log((iconElement.height() as number) * scale);
+
       // 居中对齐
       const offsetY = (elHeight - (iconElement.height() as number)) / 2;
 
-      // console.log(elHeight, iconElement.height(), offsetY, el.y(), el.y() + offsetY);
-
       g.translate(el.x() as number, (el.y() as number) + offsetY);
 
-      el.fill({ opacity: 1 });
+      groups.push(g);
 
-      // el.remove();
+      el.remove();
     });
+
+    return groups;
   }
 
   /**

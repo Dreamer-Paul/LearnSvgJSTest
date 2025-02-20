@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, type CSSProperties } from "vue";
 import SmartArtEditor from "../editor";
+import { styleNames } from "../editor/style";
 
 const inputWrap = reactive({
   width: 0,
@@ -20,6 +21,7 @@ onMounted(async () => {
     template: "converge2-v1",
     data: {
       title: "测试",
+      style: "test2",
       items: [
         {
           text: "坐标的问题怎么解决",
@@ -91,6 +93,14 @@ const exportPNG = () => {
           v-model="inputWrap.text"
         ></textarea>
       </div>
+    </div>
+    <div class="style-selection">
+      <h3>切换样式</h3>
+      <p>
+        <button v-for="name in styleNames" @click="drawInst?.changeStyle(name)">
+          {{ name }}
+        </button>
+      </p>
     </div>
   </section>
 </template>

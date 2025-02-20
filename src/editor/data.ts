@@ -6,6 +6,7 @@ export interface ISmartArtDataItem {
 export interface ISmartArtData {
   title: string;
   items: ISmartArtDataItem[];
+  style: string;
 }
 
 class SmartArtData {
@@ -46,12 +47,20 @@ class SmartArtData {
     };
   }
 
-  getTitleText() {
+  get title() {
     return this.data.title;
   }
 
   updateTitle(text: string) {
     this.data.title = text;
+  }
+
+  get style() {
+    return this.data.style;
+  }
+
+  updateStyle(style: string) {
+    this.data.style = style;
   }
 
   getIcons() {

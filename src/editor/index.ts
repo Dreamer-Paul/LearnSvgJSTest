@@ -1,6 +1,7 @@
-import { Path, SVG, Text, type Svg } from "@svgdotjs/svg.js";
+import { Element, Path, SVG, Text, type Svg } from "@svgdotjs/svg.js";
 import SmartArtData, { type ISmartArtData } from "./data";
 import SmartArtIcon from "./icon";
+import SmartArtStyle from "./style";
 
 interface SmartArtEditorProps {
   el: string;
@@ -23,6 +24,11 @@ class SmartArtEditor {
   private data: SmartArtData;
   private draw: Svg;
   private icon: SmartArtIcon;
+  private style: SmartArtStyle;
+
+  private bgEl: Element | undefined;
+  private iconGroupsEl: Element[] = [];
+
   private onInputPositionChange: (position: {
     width: number;
     height: number;
@@ -51,6 +57,7 @@ class SmartArtEditor {
 
     this.data = new SmartArtData(props.data);
     this.icon = new SmartArtIcon(this.draw);
+    this.style = new SmartArtStyle(this.draw);
 
     this.drawContext();
 
@@ -133,7 +140,7 @@ class SmartArtEditor {
           text:
             typeof this.currentEditor.index === "number"
               ? this.data.getItemText(this.currentEditor.index - 1)
-              : this.data.getTitleText(),
+              : this.data.title,
           className: id + "-text",
           textAlign,
         });
@@ -179,23 +186,6 @@ class SmartArtEditor {
     });
   }
 
-  async fetchIcon(iconName: string) {
-    // social-photobucket--logos--24x24.svg
-    const response = await fetch(`/icons/${iconName}.svg`);
-
-    const svgText = await response.text();
-
-    // 解析 SVG 文件内容并添加到画布中
-    const parser = new DOMParser();
-    const svgDoc = parser.parseFromString(svgText, "image/svg+xml");
-    const svgElement = svgDoc.documentElement;
-
-    const width = Number(svgElement.getAttribute("width") || 0);
-    const height = Number(svgElement.getAttribute("height") || 0);
-
-    return [svgElement.children[0].outerHTML, width, height];
-  }
-
   async getTemplate(templateName: string) {
     // 获取 SVG 文件内容
     const response = await fetch(
@@ -234,8 +224,15 @@ class SmartArtEditor {
     });
 
     this.draw.clear();
+
+    // 背景在最底层
+    this.bgEl = this.draw.rect(width, height);
+
+    // 图形内容
     this.draw.svg(str as string);
     this.draw.size(width, height);
+
+    this.style.setBackgroundStyle(this.bgEl, this.data.style);
 
     // 设置渐变填充
     const gradient = this.draw.gradient('linear', (add) => {
@@ -243,14 +240,34 @@ class SmartArtEditor {
       add.stop(1, '#0000ff');
     });
 
+    // const paths = this.draw.find("#lines path");
+
+    // paths.each((item) => {
+    //   // item.fill(gradient);
+    //   item.fill({ color: "#45cef4", opacity: .3 });
+    //   item.stroke({ color: "#fff", width: 2 });
+    // });
+
+    this.fillItemText();
+
+    this.iconGroupsEl = this.icon.drawIcons(this.data);
+
+    this.styleIcon();
+    this.styleRect();
+  }
+
+  styleIcon() {
+    this.iconGroupsEl.forEach((group) => {
+      this.style.setIconStyle(group, this.data.style);
+    });
+  }
+
+  styleRect() {
     const paths = this.draw.find("#lines path");
 
     paths.each((item) => {
-      item.fill(gradient);
+      this.style.setRectStyle(item, this.data.style);
     });
-
-    this.fillItemText();
-    this.icon.drawIcons(this.data);
   }
 
   wrapText(text: string, width: number) {
@@ -354,7 +371,7 @@ class SmartArtEditor {
       let content = "";
 
       if (id.includes("title")) {
-        content = this.data.getTitleText();
+        content = this.data.title;
       } else {
         const index = parseInt(id.split("-").pop() || "0", 10) - 1;
         content = this.data.getItemText(index);
@@ -398,6 +415,18 @@ class SmartArtEditor {
       //   add.translate(element.x() as number, (element.y() as number) + 24);
       // });
     });
+  }
+
+  /**
+   * 切换风格
+   * @param {string} styleName
+   */
+  changeStyle(styleName: string) {
+    this.data.updateStyle(styleName);
+
+    this.bgEl && this.style.setBackgroundStyle(this.bgEl, this.data.style);
+    this.styleIcon();
+    this.styleRect();
   }
 
   // 更新文本
