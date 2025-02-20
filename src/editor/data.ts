@@ -1,5 +1,6 @@
 export interface ISmartArtDataItem {
   text: string;
+  icon?: string;
 }
 
 export interface ISmartArtData {
@@ -26,6 +27,10 @@ class SmartArtData {
     return this.data.items[index].text;
   }
 
+  getItemIcon(index: number) {
+    return this.data.items[index].icon;
+  }
+
   addItem(index: number) {
     this.data.items.splice(index - 1, 0, { text: "New Item" });
   }
@@ -47,6 +52,10 @@ class SmartArtData {
 
   updateTitle(text: string) {
     this.data.title = text;
+  }
+
+  getIcons() {
+    return [...new Set(this.data.items.map((item) => item.icon))];
   }
 }
 

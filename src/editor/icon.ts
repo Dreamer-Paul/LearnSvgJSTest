@@ -1,4 +1,5 @@
-import type { Element, Svg } from "@svgdotjs/svg.js";
+import { type Element, type Svg } from "@svgdotjs/svg.js";
+import type SmartArtData from "./data";
 
 export interface ISmartArtDataItem {
   text: string;
@@ -9,11 +10,18 @@ export interface ISmartArtData {
   items: ISmartArtDataItem[];
 }
 
+export type ISmartArtMap = Record<string, string>;
+
 class SmartArtIcon {
   private draw: Svg;
+  private map: ISmartArtMap = {};
 
   constructor(draw: Svg) {
     this.draw = draw;
+  }
+
+  addToMap(key: string, value: string) {
+    this.map[key] = value;
   }
 
   /**
@@ -23,7 +31,7 @@ class SmartArtIcon {
    */
   async fetchIcon(iconName: string) {
     // social-photobucket--logos--24x24.svg
-    const response = await fetch(`/icons/${iconName}`);
+    const response = await fetch(`/icons/${iconName}.svg`);
 
     const svgText = await response.text();
 
@@ -32,10 +40,17 @@ class SmartArtIcon {
     const svgDoc = parser.parseFromString(svgText, "image/svg+xml");
     const svgElement = svgDoc.documentElement;
 
-    const width = Number(svgElement.getAttribute("width") || 0);
-    const height = Number(svgElement.getAttribute("height") || 0);
+    // 提取所有 path 标签中的 d 属性
+    const paths = svgElement.querySelectorAll("path");
+    let combinedPathData = "";
+    paths.forEach((path) => {
+      combinedPathData += path.getAttribute("d") + " ";
+    });
 
-    return [svgElement.children[0].outerHTML, width, height];
+    // 创建一个新的 SVG 元素，包含合并后的 path
+    const combinedSvg = `<path d="${combinedPathData.trim()}" />`;
+
+    return combinedSvg;
   }
 
   /**
@@ -50,47 +65,62 @@ class SmartArtIcon {
   /**
    * 绘制一个图标
    */
-  drawIcon(placeholder: Element) {
-
-  }
+  drawIcon(placeholder: Element) {}
 
   /**
    * 绘制图标
-   * @param {string} icon
+   * @param icon
    */
-  drawIcons(icon: string) {
-    // Todo: 暂时是所有元素都画一个图标
+  drawIcons(data: SmartArtData) {
     const elements = this.draw.find("[id^='ic-']");
 
     const iconGroup = this.draw.group();
     iconGroup.addClass("ic-group");
 
     elements.each((el) => {
+      const id = el.id();
+      const index = parseInt(id.split("-").pop() || "0", 10) - 1;
+
+      if (Number.isNaN(index)) {
+        return;
+      }
+
+      const iconName = data.getItemIcon(index);
+
+      if (!iconName) {
+        return;
+      }
+
+      const icon = this.map[iconName];
+
       const elWidth = el.width() as number;
       const elHeight = el.height() as number;
 
       const g = iconGroup.group();
+      g.stroke({ color: "#fff", width: 2 }).fill("none");
       const iconElement = g.svg(icon).first();
 
       // 等比缩放图标到 48 的宽度
       const scale = elWidth / (iconElement.width() as number);
-      iconElement.size(elHeight, iconElement.height() as number * scale);
+      iconElement.size(elWidth, (iconElement.height() as number) * scale);
 
       // 居中对齐
-      // const offsetX = (elWidth - 48) / 2;
-      const offsetY = Math.floor((elHeight - (iconElement.height() as number)) / 2);
-      g.translate(el.x() as number, el.y() as number + offsetY);
+      const offsetY = (elHeight - (iconElement.height() as number)) / 2;
 
-      el.remove();
+      // console.log(elHeight, iconElement.height(), offsetY, el.y(), el.y() + offsetY);
+
+      g.translate(el.x() as number, (el.y() as number) + offsetY);
+
+      el.fill({ opacity: 1 });
+
+      // el.remove();
     });
   }
 
   /**
    * 设置样式
    */
-  setIconStyle() {
-
-  }
+  setIconStyle() {}
 }
 
 export default SmartArtIcon;

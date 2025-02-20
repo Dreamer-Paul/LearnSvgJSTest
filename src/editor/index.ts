@@ -181,7 +181,7 @@ class SmartArtEditor {
 
   async fetchIcon(iconName: string) {
     // social-photobucket--logos--24x24.svg
-    const response = await fetch(`/icons/${iconName}`);
+    const response = await fetch(`/icons/${iconName}.svg`);
 
     const svgText = await response.text();
 
@@ -222,8 +222,16 @@ class SmartArtEditor {
   async drawContext() {
     const [str, width, height] = await this.getTemplate(this.template);
 
-    // Todo: 临时操作
-    const [icon] = await this.icon.fetchIcon("social-photobucket--logos--24x24.svg");
+    // 目前这个数据里面一共有什么图（包括重复的）
+    const a = this.data.getIcons();
+
+    // Todo: 临时操作，写的比较粗糙
+    const icons = await this.icon.fetchIcons(a);
+
+    // Todo: 图标素材入库，下次最好不再请求图片资源
+    a.forEach((i, index) => {
+      this.icon.addToMap(i, icons[index]);
+    });
 
     this.draw.clear();
     this.draw.svg(str as string);
@@ -242,7 +250,7 @@ class SmartArtEditor {
     });
 
     this.fillItemText();
-    this.icon.drawIcons(icon);
+    this.icon.drawIcons(this.data);
   }
 
   wrapText(text: string, width: number) {

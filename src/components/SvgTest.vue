@@ -23,12 +23,15 @@ onMounted(async () => {
       items: [
         {
           text: "坐标的问题怎么解决",
+          icon: "animal-horse--pets-animals--24x24",
         },
         {
           text: "为什么这个项目这么难做",
+          icon: "social-photobucket--logos--24x24",
         },
         {
           text: "手搓功能 Bug 是真的巨多啊",
+          icon: "animal-horse--pets-animals--24x24",
         },
       ],
     },
