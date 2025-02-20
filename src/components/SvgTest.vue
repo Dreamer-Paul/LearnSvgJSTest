@@ -90,6 +90,7 @@ const exportPNG = () => {
         <textarea
           class="svg--input"
           :style="{ textAlign: inputWrap.textAlign }"
+          v-show="inputWrap.x > 0"
           v-model="inputWrap.text"
         ></textarea>
       </div>

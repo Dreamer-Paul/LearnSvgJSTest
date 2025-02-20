@@ -1,4 +1,4 @@
-import { Element, Path, SVG, Text, type Svg } from "@svgdotjs/svg.js";
+import { Element as SvgJSElement, Path, SVG, Text, type Svg } from "@svgdotjs/svg.js";
 import SmartArtData, { type ISmartArtData } from "./data";
 import SmartArtIcon from "./icon";
 import SmartArtStyle from "./style";
@@ -26,8 +26,8 @@ class SmartArtEditor {
   private icon: SmartArtIcon;
   private style: SmartArtStyle;
 
-  private bgEl: Element | undefined;
-  private iconGroupsEl: Element[] = [];
+  private bgEl: SvgJSElement | undefined;
+  private iconGroupsEl: SvgJSElement[] = [];
 
   private onInputPositionChange: (position: {
     width: number;
