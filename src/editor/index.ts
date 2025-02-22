@@ -302,8 +302,6 @@ class SmartArtEditor {
       // 新版 keyName，根据 keyName 获取和存储节点设置
       const [_, align, keyName] = id.split("-");
 
-      console.log("keyName", keyName, align);
-
       const content = this.option.getText(keyName)?.text;
 
       if (!content) {
@@ -335,7 +333,7 @@ class SmartArtEditor {
       );
 
       this.textPlaceholdersOptions[id] = {
-        id: `text-${keyName}`,
+        id: keyName,
         x: el.x() as number,
         y: el.y() as number,
         width: el.width() as number,
@@ -365,6 +363,20 @@ class SmartArtEditor {
     this.styleRect();
   }
 
+
+  /**
+   * 获取文本
+   * @param data
+   * @returns
+   */
+  getText(data: TextControlOption) {
+    return this.option.getText(data.id)?.text || "";
+  }
+
+  /**
+   * 更新文本
+   * @param data
+   */
   updateTextNew(data: TextControlOption & { text: string }) {
     console.log("updateTextNew", data);
 
@@ -377,7 +389,7 @@ class SmartArtEditor {
       textNode,
     });
 
-    this.option.setItem(data.id, { text: data.text });
+    this.option.setItem(`text-${data.id}`, { text: data.text });
   }
 
   addItem(index: number) {

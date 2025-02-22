@@ -80,6 +80,7 @@ onMounted(async () => {
       addButtonOptions.value = values;
     },
     onUpdateControlTexts: (values) => {
+      // Todo
       controlTextOptions.value = Object.keys(values).map((item) => values[item]);
     },
   });
@@ -100,12 +101,29 @@ const controlTextTextareaRef = ref<HTMLTextAreaElement>();
 const openTextarea = (item: TextControlOption) => {
   controlTextTextarea.value = item;
 
+  const text = drawInst?.getText(item);
+
+  if (!text) {
+    return;
+  }
+
   nextTick(() => {
-    controlTextTextareaRef.value?.focus();
+    const input = controlTextTextareaRef.value;
+
+    if (!input) {
+      return;
+    }
+
+    input.value = text;
+    input.focus();
   });
 }
 
 const onBlur = (ev: Event) => {
+  if (!controlTextTextarea.value) {
+    return;
+  }
+
   console.log("onBlur", controlTextTextarea.value);
 
   drawInst?.updateTextNew(
