@@ -4,10 +4,12 @@ import {
   SVG,
   Text,
   type Svg,
+  G,
 } from "@svgdotjs/svg.js";
 import SmartArtData, { type ISmartArtData } from "./data";
 import SmartArtIcon from "./icon";
 import SmartArtStyle from "./style";
+import SmartArtText from "./text";
 
 interface IPosition {
   className: string;
@@ -30,9 +32,19 @@ interface SmartArtEditorProps {
   el: string;
   template: string;
   data: ISmartArtData;
-  onUpdateAddButtons: (v: IButton[]) => void;
+  onUpdateControlButtons: (v: IButton[]) => void;
+  onUpdateControlTexts: (options: TextPlaceHolderOption[]) => void;
   onInputPositionChange: (position: IPosition) => void;
   onUpdateText: (fn: any) => void;
+}
+
+export interface TextPlaceHolderOption {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  textAlign: "left" | "right" | "center" | undefined;
 }
 
 class SmartArtEditor {
@@ -40,12 +52,21 @@ class SmartArtEditor {
   private data: SmartArtData;
   private draw: Svg;
   private icon: SmartArtIcon;
+  private text: SmartArtText;
   private style: SmartArtStyle;
 
+  // 背景
   private bgEl: SvgJSElement | undefined;
+  // 文字
+  private textEl: SvgJSElement[] = [];
+
+  private textPlaceholdersOptions: Record<string, TextPlaceHolderOption> = {};
+
+  // 图标
   private iconGroupsEl: SvgJSElement[] = [];
 
   private onUpdateAddButtons: (v: IButton[]) => void;
+  private onUpdateControlTexts: (options: TextPlaceHolderOption[]) => void;
   private onInputPositionChange: (position: IPosition) => void;
   private onUpdateText: (fn: any) => void;
 
@@ -59,141 +80,19 @@ class SmartArtEditor {
   constructor(props: SmartArtEditorProps) {
     // this.el = props.el;
     this.template = props.template;
-    this.onUpdateAddButtons = props.onUpdateAddButtons;
+    this.onUpdateAddButtons = props.onUpdateControlButtons;
     this.onInputPositionChange = props.onInputPositionChange;
+    this.onUpdateControlTexts = props.onUpdateControlTexts;
     this.onUpdateText = props.onUpdateText;
 
     this.draw = SVG().addTo(props.el);
 
     this.data = new SmartArtData(props.data);
     this.icon = new SmartArtIcon(this.draw);
+    this.text = new SmartArtText(this.draw);
     this.style = new SmartArtStyle(this.draw);
 
     this.drawContext();
-
-    this.bindClickEvent();
-
-    this.init();
-  }
-
-  // 初始化
-  init() {
-    console.log("init", this.draw);
-
-    document.addEventListener("click", (event) => {
-      const target = event.target as HTMLElement;
-      if (
-        !target.closest("svg") &&
-        target.tagName !== "INPUT" &&
-        target.tagName !== "TEXTAREA"
-      ) {
-        this.onUpdateText(
-          (textClassName: string, text: string, width: number) => {
-            console.log("text", text, textClassName);
-            this.updateText(`.${textClassName}`, text, width);
-          }
-        );
-
-        this.onInputPositionChange({
-          width: 0,
-          height: 0,
-          x: 0,
-          y: 0,
-          text: "",
-          className: "",
-          textAlign: "",
-        });
-      }
-    });
-  }
-
-  bindClickEvent() {
-    this.draw.on("click", async (ev) => {
-      console.log(ev.target);
-
-      if (!(ev.target instanceof Element)) {
-        return;
-      }
-
-      const { id } = ev.target;
-
-      // 文本元素
-      if (id.includes("tx-")) {
-        this.currentEditor = {
-          id,
-          index: id.split("-").pop(),
-        };
-
-        // 临时修复 index 的问题
-        if (!Number.isNaN(Number(this.currentEditor.index))) {
-          this.currentEditor.index = Number(this.currentEditor.index);
-        }
-
-        const target = ev.target;
-        const rect = target.getBoundingClientRect();
-        const svgRect = this.draw.node.getBoundingClientRect();
-
-        const textAlign =
-          id.includes("lt") || id.includes("lc") || id.includes("lb")
-            ? "left"
-            : id.includes("rt") || id.includes("rc") || id.includes("rb")
-            ? "right"
-            : id.includes("ct") || id.includes("cc") || id.includes("cb")
-            ? "center"
-            : "left";
-
-        this.onInputPositionChange({
-          width: rect.width,
-          height: rect.height,
-          x: rect.left - (svgRect.left || 0),
-          y: rect.top - (svgRect.top || 0),
-          text:
-            typeof this.currentEditor.index === "number"
-              ? this.data.getItemText(this.currentEditor.index - 1)
-              : this.data.title,
-          className: id + "-text",
-          textAlign,
-        });
-
-        return;
-      }
-
-      this.onUpdateText(
-        (textClassName: string, text: string, width: number) => {
-          console.log("text", text, textClassName);
-          this.updateText(`.${textClassName}`, text, width);
-        }
-      );
-
-      this.onInputPositionChange({
-        width: 0,
-        height: 0,
-        x: 0,
-        y: 0,
-        text: "",
-        className: "",
-        textAlign: "",
-      });
-
-      const index = parseInt(id.split("-").pop() || "0", 10);
-
-      // id 示例：bt-cc-add-1，意味着我需要插入一个节点到索引为 1 的位置（0 后面插一个）
-      if (id.includes("add")) {
-        this.data.addItem(index); // 添加项目
-        // this.draw.clear(); // 清空画布
-        // await this.getTemplate(this.template); // 替换模板
-        this.drawContext(); // 重新绘制内容
-      }
-      // id 示例：bt-cc-remove-2 意味着我需要删除索引为 1 的元素
-      else if (id.includes("remove")) {
-        this.data.removeItem(index); // 删除项目
-
-        // console.log(index, this.data.items);
-        // this.draw.clear(); // 清空画布
-        // await this.getTemplate(this.template); // 替换模板
-        this.drawContext(); // 重新绘制内容
-      }
-    });
   }
 
   async getTemplate(templateName: string) {
@@ -208,7 +107,7 @@ class SmartArtEditor {
     const svgDoc = parser.parseFromString(svgText, "image/svg+xml");
     const svgElement = svgDoc.documentElement;
 
-    console.log(svgElement);
+    // console.log(svgElement);
 
     const width = Number(svgElement.getAttribute("width") || 0);
     const height = Number(svgElement.getAttribute("height") || 0);
@@ -250,32 +149,53 @@ class SmartArtEditor {
       add.stop(1, "#0000ff");
     });
 
-    // const paths = this.draw.find("#lines path");
-
-    // paths.each((item) => {
-    //   // item.fill(gradient);
-    //   item.fill({ color: "#45cef4", opacity: .3 });
-    //   item.stroke({ color: "#fff", width: 2 });
-    // });
-
-    this.fillItemText();
-
+    this.prepareText();
     this.iconGroupsEl = this.icon.drawIcons(this.data);
 
     this.styleIcon();
     this.styleRect();
 
+    this.createControlButtons();
+  }
+
+  styleIcon() {
+    const styleItem = this.style.getStyleItem(this.data.style);
+
+    if (!styleItem || !styleItem.icon) {
+      return;
+    }
+
+    this.iconGroupsEl.forEach((group, index) => {
+      this.style.setIconStyle(group, styleItem, index);
+    });
+  }
+
+  styleRect() {
+    const styleItem = this.style.getStyleItem(this.data.style);
+
+    if (!styleItem || !styleItem.rect) {
+      return;
+    }
+
+    this.draw.find("#lines path").each((item, index) => {
+      this.style.setRectStyle(item, styleItem, index);
+    });
+  }
+
+  /**
+   * 向画布外添加增删管理按钮
+   */
+  createControlButtons() {
     // 获取添加和删除的按钮
-    const btnRectEls = this.draw.find("[id^='bt-']");
+    const placeholderEls = this.draw.find("[id^='bt-']");
+    const buttonOptions: IButton[] = [];
 
-    const bbb: IButton[] = [];
-
-    btnRectEls.each((item) => {
+    placeholderEls.each((item) => {
       const id = item.id();
       const index = parseInt(id.split("-").pop() || "0", 10) - 1;
 
       if (id.includes("add")) {
-        bbb.push({
+        buttonOptions.push({
           x: item.x() as number,
           y: item.y() as number,
           type: "add",
@@ -284,7 +204,7 @@ class SmartArtEditor {
 
         item.remove();
       } else if (id.includes("remove")) {
-        bbb.push({
+        buttonOptions.push({
           x: item.x() as number,
           y: item.y() as number,
           type: "remove",
@@ -295,55 +215,7 @@ class SmartArtEditor {
       }
     });
 
-    this.onUpdateAddButtons(bbb);
-  }
-
-  styleIcon() {
-    this.iconGroupsEl.forEach((group) => {
-      this.style.setIconStyle(group, this.data.style);
-    });
-  }
-
-  styleRect() {
-    const paths = this.draw.find("#lines path");
-
-    paths.each((item) => {
-      this.style.setRectStyle(item, this.data.style);
-    });
-  }
-
-  wrapText(text: string, width: number) {
-    const draw = this.draw;
-    const words = text.split("");
-    const lines = [];
-    let currentLine = "";
-    let currentLineWidth = 0;
-
-    // 创建临时文本元素来测量宽度
-    const tempText = draw.text("").font({
-      // family: 'Arial',
-      size: 24,
-    });
-
-    words.forEach((word) => {
-      tempText.text(currentLine + word);
-
-      if (tempText.length() > width) {
-        lines.push({ text: currentLine, width: currentLineWidth, height: 24 });
-        currentLine = word;
-        currentLineWidth = tempText.length();
-      } else {
-        currentLine += word;
-        currentLineWidth = tempText.length();
-      }
-    });
-
-    if (currentLine) {
-      lines.push({ text: currentLine, width: currentLineWidth, height: 24 });
-    }
-
-    tempText.remove();
-    return lines;
+    this.onUpdateAddButtons(buttonOptions);
   }
 
   // 绘制文字
@@ -351,31 +223,29 @@ class SmartArtEditor {
     content,
     width,
     id,
+    textAlign,
     element,
     textNode,
   }: {
     content: string;
     width: number;
     id: string;
+    textAlign: string;
     element?: Path;
     textNode?: Text;
   }) {
-    const group = this.draw.group(); // 创建一个 g 元素
+    // const group = this.draw.group(); // 创建一个 g 元素
 
-    (textNode || group).text((add) => {
-      const lines = this.wrapText(content, width);
+    const t = (textNode || this.draw).text((add) => {
+      const lines = this.text.wrapText(content, width);
 
       lines.forEach((line) => {
         const tspan = add.tspan(line.text).newLine();
 
         // 设置文本对齐方式
-        if (id.includes("lt") || id.includes("lc") || id.includes("lb")) {
+        if (textAlign.includes("l")) {
           tspan.dx(0); // 左对齐
-        } else if (
-          id.includes("rt") ||
-          id.includes("rc") ||
-          id.includes("rb")
-        ) {
+        } else if (textAlign.includes("r")) {
           tspan.dx(width - line.width); // 右对齐
         } else {
           tspan.dx((width - line.width) / 2); // 居中对齐
@@ -383,7 +253,10 @@ class SmartArtEditor {
       });
 
       if (!textNode) {
-        add.addClass(`${id}-text`);
+        // add.addClass(id);
+        // add.addClass(`${id}-text`);
+        // add.id(`${id}-text`);
+        add.id(id);
       }
 
       add.font({
@@ -395,68 +268,116 @@ class SmartArtEditor {
       }
     });
 
-    if (!textNode) {
-      group.addClass(`${id}-group`); // 为 g 元素添加类名
-    }
+    // if (!textNode) {
+    //   group.addClass(`${id}-group`); // 为 g 元素添加类名
+    // }
+
+    return t;
+  }
+
+  renderTextUpdate({
+    text,
+    width,
+    textAlign,
+    textNode,
+  }: {
+    text: string;
+    width: number;
+    textAlign: string;
+    textNode: Text;
+  }) {
+    const t = textNode.text((add) => {
+      const lines = this.text.wrapText(text, width);
+
+      lines.forEach((line) => {
+        const tspan = add.tspan(line.text).newLine();
+
+        // 设置文本对齐方式
+        if (textAlign.includes("l")) {
+          tspan.dx(0); // 左对齐
+        } else if (textAlign.includes("r")) {
+          tspan.dx(width - line.width); // 右对齐
+        } else {
+          tspan.dx((width - line.width) / 2); // 居中对齐
+        }
+      });
+
+      add.font({
+        size: 24,
+      });
+    });
+
+    return t;
   }
 
   /**
-   * 填入文本到 Svg 图
+   * 存储原框架内包含的信息，渲染文字和编辑占位符
    */
-  fillItemText() {
+  prepareText() {
     const elements = this.draw.find("[id^='tx-']");
 
-    elements.each((el) => {
+    const g: Text[] = [];
+
+    elements.each((el, index) => {
       const element = el as Path;
       const id = element.id();
+
+      // 新版 keyName，根据 keyName 获取和存储节点设置
+      const keyName = id.split("-").pop();
+
+      console.log("keyName", keyName);
 
       let content = "";
 
       if (id.includes("title")) {
         content = this.data.title;
       } else {
+        // Todo
         const index = parseInt(id.split("-").pop() || "0", 10) - 1;
         content = this.data.getItemText(index);
       }
 
-      // element.attr({ "data-text": content || "" });
-
       const elementWidth = element.width() as number;
-      this.drawText({
-        content: content,
-        width: elementWidth,
+
+      const textAlign = (() => {
+        if (id.includes("l")) {
+          return "left";
+        } else if (id.includes("r")) {
+          return "right";
+        } else if (id.includes("c")) {
+          return "center";
+        }
+
+        return "left";
+      })() as TextPlaceHolderOption["textAlign"];
+
+      g.push(
+        this.drawText({
+          textAlign,
+          content: content,
+          width: elementWidth,
+          id: `${id}-text`,
+          element,
+        })
+      );
+
+      this.textPlaceholdersOptions[id] = {
         id,
-        element,
-      });
+        x: el.x() as number,
+        y: el.y() as number,
+        width: el.width() as number,
+        height: el.height() as number,
+        index,
+        textAlign,
+      };
 
-      // this.draw.text((add) => {
-      //   const lines = this.wrapText(content, element.width() as number);
-
-      //   lines.forEach((line) => {
-      //     const tspan = add.tspan(line.text).newLine();
-
-      //     // 设置文本对齐方式
-      //     if (id.includes("lt") || id.includes("lc") || id.includes("lb")) {
-      //       tspan.dx(0); // 左对齐
-      //     } else if (
-      //       id.includes("rt") ||
-      //       id.includes("rc") ||
-      //       id.includes("rb")
-      //     ) {
-      //       tspan.dx((element.width() as number) - line.width); // 右对齐
-      //     } else {
-      //       tspan.dx(((element.width() as number) - line.width) / 2); // 居中对齐
-      //     }
-      //   });
-
-      //   const elId = el?.node?.id;
-      //   add.addClass(`${elId}-text`);
-      //   add.font({
-      //     size: 24,
-      //   });
-      //   add.translate(element.x() as number, (element.y() as number) + 24);
-      // });
+      // el.remove();
     });
+
+    this.textEl = g;
+    this.onUpdateControlTexts(this.textPlaceholdersOptions);
+
+    return g;
   }
 
   /**
@@ -487,15 +408,23 @@ class SmartArtEditor {
 
     if (textNode) {
       this.drawText({ content: text, width, id: className, textNode });
-
-      // textNode.text((add) => {
-      //   // console.log(el.width());
-      //   const lines = this.wrapText(text, width);
-      //   lines.forEach((line) => {
-      //     add.tspan(line.text).newLine();
-      //   });
-      // });
     }
+  }
+
+  updateTextNew(data) {
+    // this.
+    console.log("updateTextNew", data);
+    // return;
+    // const textNode = this.draw.findOne(`#${id}`) as Text;
+
+    const textNode = this.textEl[data.index] as Text;
+
+    this.renderTextUpdate({
+      text: data.text,
+      width: data.width,
+      textAlign: data.textAlign,
+      textNode,
+    });
   }
 
   exportSVG = () => {

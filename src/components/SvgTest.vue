@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref, type CSSProperties } from "vue";
-import SmartArtEditor, { type IButton } from "../editor";
+import { nextTick, onMounted, ref, type CSSProperties } from "vue";
+import SmartArtEditor, { type IButton, type TextPlaceHolderOption } from "../editor";
 import { styleNames } from "../editor/style";
 import { Plus, Trash } from "lucide-vue-next";
 
@@ -15,6 +15,9 @@ const inputWrap = ref({
 });
 
 const addButtonOptions = ref<IButton[]>([]);
+const controlTextOptions = ref<TextPlaceHolderOption[]>([]);
+
+const controlTextTextarea = ref<TextPlaceHolderOption | undefined>(undefined);
 
 let drawInst: SmartArtEditor;
 
@@ -22,12 +25,35 @@ onMounted(async () => {
   drawInst = new SmartArtEditor({
     el: "#svg-container",
     template: "converge2-v1",
+    elOptions: {
+      "title": {
+        text: "测试标题",
+      },
+      "item-1": {
+        text: "图标的坐标有问题",
+      },
+      "icon-1": {
+        icon: "animal-horse--pets-animals--24x24",
+      },
+      "item-2": {
+        text: "两个人来开发人家几十人团队的项目",
+      },
+      "icon-2": {
+        icon: "animal-horse--pets-animals--24x24",
+      },
+      "item-3": {
+        text: "手搓功能 Bug 是真的巨多啊",
+      },
+      "icon-3": {
+        icon: "social-photobucket--logos--24x24",
+      }
+    },
     data: {
       title: "测试",
       style: "test2",
       items: [
         {
-          text: "坐标的问题怎么解决",
+          text: "图标的坐标有问题",
           icon: "animal-horse--pets-animals--24x24",
         },
         {
@@ -35,13 +61,20 @@ onMounted(async () => {
           icon: "social-photobucket--logos--24x24",
         },
         {
-          text: "手搓功能 Bug 是真的巨多啊",
+          text: "两个人来开发人家几十人团队的项目",
           icon: "animal-horse--pets-animals--24x24",
+        },
+        {
+          text: "手搓功能 Bug 是真的巨多啊",
+          icon: "social-photobucket--logos--24x24",
         },
       ],
     },
-    onUpdateAddButtons: (values) => {
+    onUpdateControlButtons: (values) => {
       addButtonOptions.value = values;
+    },
+    onUpdateControlTexts: (values) => {
+      controlTextOptions.value = Object.keys(values).map((item) => values[item]);
     },
     onInputPositionChange: (inputPosition) => {
       console.log("inputPosition", inputPosition);
@@ -65,6 +98,29 @@ const exportSVG = () => {
 const exportPNG = () => {
   drawInst?.exportPNG();
 };
+
+const controlTextTextareaRef = ref<HTMLTextAreaElement>();
+
+const openTextarea = (item) => {
+  controlTextTextarea.value = item;
+
+  nextTick(() => {
+    controlTextTextareaRef.value?.focus();
+  });
+}
+
+const onBlur = (ev) => {
+  console.log(ev.target.value, controlTextTextarea.value);
+
+  drawInst?.updateTextNew(
+    {
+      ...controlTextTextarea.value,
+      text: ev.target.value,
+    }
+  );
+
+  controlTextTextarea.value = undefined;
+}
 </script>
 
 <template>
@@ -95,6 +151,39 @@ const exportPNG = () => {
           <Plus v-if="item.type === 'add'" :size="16" />
           <Trash v-else :size="16" />
         </span>
+      </div>
+
+      <div class="text-controls">
+        <span
+          v-for="item in controlTextOptions"
+          :style="{
+            top: `${item.y}px`,
+            left: `${item.x}px`,
+            width: `${item.width}px`,
+            height: `${item.height}px`,
+          }"
+          @click="openTextarea(item)"
+        >
+        </span>
+      </div>
+
+      <div
+        v-if="controlTextTextarea"
+        :style="{
+          position: 'absolute',
+          width: controlTextTextarea?.width + 'px',
+          height: controlTextTextarea?.height + 'px',
+          left: controlTextTextarea?.x + 'px',
+          top: controlTextTextarea?.y + 'px',
+        }"
+      >
+        <textarea
+          ref="controlTextTextareaRef"
+          class="svg--input"
+          :style="{ textAlign: controlTextTextarea.textAlign }"
+          v-model="inputWrap.text"
+          @blur="onBlur"
+        ></textarea>
       </div>
 
       <!-- 输入框 -->
@@ -146,5 +235,16 @@ const exportPNG = () => {
   padding: 4px;
   box-sizing: border-box;
   border-radius: 100px;
+}
+
+.text-controls span {
+  display: block;
+  cursor: pointer;
+  position: absolute;
+}
+
+.text-controls span:hover {
+  border: 2px solid #2292ff;
+  border-radius: 1em;
 }
 </style>
