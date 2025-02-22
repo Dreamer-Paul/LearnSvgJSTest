@@ -1,6 +1,9 @@
 import type { Element, Svg, StrokeData, FillData } from "@svgdotjs/svg.js";
-// import type SmartArtData from "./data";
 
+// 预设的颜色组合，更换模版可取这里的颜色做风格化
+const presetColors = ["#d70505", "#ffa700", "#48ce07", "#02d09e", "#028dd0"];
+
+// 风格预设
 const styleList: ISmartArtStyle[] = [
   {
     // 模板名称
@@ -8,15 +11,27 @@ const styleList: ISmartArtStyle[] = [
     background: {
       color: "#FEFAE0",
     },
-    rect: {
-      fill: {
-        color: "#A4B465",
-      },
-      stroke: {
-        color: "#626F47",
-        width: 2,
-      },
+    rectMode: "colors",
+    rect: (index: number) => {
+      return {
+        fill: {
+          color: presetColors[index],
+        },
+        stroke: {
+          color: "#626F47",
+          width: 2,
+        },
+      };
     },
+    // rect: {
+    //   fill: {
+    //     color: "#A4B465",
+    //   },
+    //   stroke: {
+    //     color: "#626F47",
+    //     width: 2,
+    //   },
+    // },
     icon: {
       stroke: {
         color: "#FEFAE0",
@@ -69,20 +84,20 @@ const styleList: ISmartArtStyle[] = [
   {
     name: "test4",
     background: {
-      color: "#FFF2AF",
+      color: "#F2EFE7",
     },
     rect: {
       fill: {
-        color: "#DAD2FF",
+        color: "#4C7B8B",
       },
       stroke: {
-        color: "#493D9E",
+        color: "#23486A",
         width: 2,
       },
     },
     icon: {
       stroke: {
-        color: "#B2A5FF",
+        color: "#EFB036",
         width: 2,
       },
     },
@@ -91,13 +106,16 @@ const styleList: ISmartArtStyle[] = [
 
 export const styleNames = styleList.map((item) => item.name);
 
+interface IRectStyle {
+  fill?: FillData;
+  stroke?: StrokeData;
+}
+
 interface ISmartArtStyle {
   name: string;
   background?: FillData;
-  rect: {
-    fill?: FillData;
-    stroke?: StrokeData;
-  };
+  rectMode?: "colors";
+  rect: IRectStyle | ((index: number) => IRectStyle);
   icon: {
     stroke?: StrokeData;
   };
@@ -110,30 +128,26 @@ class SmartArtStyle {
     this.draw = draw;
   }
 
-  setRectStyle(rectEl: Element, templateName: string) {
-    const styleItem = styleList.find((item) => item.name === templateName);
-
-    if (!styleItem) {
-      return;
-    }
-
-    if (styleItem.rect) {
-      styleItem.rect.fill && rectEl.fill(styleItem.rect.fill);
-      styleItem.rect.stroke && rectEl.stroke(styleItem.rect.stroke);
-    }
+  getStyleItem(styleName: string) {
+    return styleList.find((item) => item.name === styleName);
   }
 
-  setIconStyle(iconEl: Element, templateName: string) {
-    const styleItem = styleList.find((item) => item.name === templateName);
+  setRectStyle(rectEl: Element, style: ISmartArtStyle, index?: number) {
+    let rectStyle: IRectStyle;
 
-    if (!styleItem) {
-      return;
+    if (typeof style.rect === "function") {
+      rectStyle = style.rect(index || 0);
+    } else {
+      rectStyle = style.rect;
     }
 
-    if (styleItem.icon) {
-      iconEl.fill("none");
-      styleItem.icon.stroke && iconEl.stroke(styleItem.icon.stroke);
-    }
+    rectStyle.fill && rectEl.fill(rectStyle.fill);
+    rectStyle.stroke && rectEl.stroke(rectStyle.stroke);
+  }
+
+  setIconStyle(iconEl: Element, style: ISmartArtStyle, index?: number) {
+    iconEl.fill("none");
+    style.icon.stroke && iconEl.stroke(style.icon.stroke);
   }
 
   setBackgroundStyle(bgEl: Element, templateName: string) {
@@ -143,8 +157,8 @@ class SmartArtStyle {
       return;
     }
 
-    if (styleItem.icon) {
-      styleItem.background && bgEl.fill(styleItem.background);
+    if (styleItem.background) {
+      bgEl.fill(styleItem.background);
     }
   }
 }

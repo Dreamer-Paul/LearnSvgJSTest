@@ -79,39 +79,6 @@ button:focus-visible {
   position: relative;
 }
 
-.svg--conatiner [id*="tx-"] {
-  cursor: pointer;
-  opacity: 0.51;
-}
-.svg--conatiner [id*="tx-"]:hover {
-  stroke: #ccc;
-  stroke-width: 1;
-  opacity: 1;
-}
-
-.svg--conatiner [id*="bt-"] {
-  position: relative;
-  cursor: pointer;
-  opacity: 0;
-  z-index: 10;
-}
-.svg--conatiner [id*="bt-"]::after {
-  content: "+";
-  position: absolute;
-  z-index: 20;
-  left: 0;
-  top: 0;
-  width: 10px;
-  height: 10px;
-  border: 1px solid blue;
-}
-
-.svg--conatiner:hover [id*="bt-"] {
-  stroke: #ccc;
-  stroke-width: 1;
-  opacity: 1;
-}
-
 .svg--input__container {
   position: absolute;
   margin: 0;

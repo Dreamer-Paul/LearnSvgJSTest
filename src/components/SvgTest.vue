@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref, type CSSProperties } from "vue";
-import SmartArtEditor, { type IButton } from "../editor";
+import { nextTick, onMounted, ref, type CSSProperties } from "vue";
+import SmartArtEditor, { type ItemControlOption, type TextControlOption } from "../editor";
 import { styleNames } from "../editor/style";
 import { Plus, Trash } from "lucide-vue-next";
 
@@ -14,7 +14,10 @@ const inputWrap = ref({
   textAlign: undefined as CSSProperties["text-align"] | undefined,
 });
 
-const addButtonOptions = ref<IButton[]>([]);
+const addButtonOptions = ref<ItemControlOption[]>([]);
+const controlTextOptions = ref<TextControlOption[]>([]);
+
+const controlTextTextarea = ref<TextControlOption | undefined>(undefined);
 
 let drawInst: SmartArtEditor;
 
@@ -22,12 +25,41 @@ onMounted(async () => {
   drawInst = new SmartArtEditor({
     el: "#svg-container",
     template: "converge2-v1",
+    option: {
+      "text-title": {
+        text: "测试标题",
+      },
+      "text-1": {
+        text: "图标的坐标有问题",
+      },
+      "icon-1": {
+        name: "animal-horse--pets-animals--24x24",
+      },
+      "text-2": {
+        text: "两个人来开发人家几十人团队的项目",
+      },
+      "icon-2": {
+        name: "animal-horse--pets-animals--24x24",
+      },
+      "text-3": {
+        text: "手搓功能 Bug 是真的巨多啊",
+      },
+      "icon-3": {
+        name: "social-photobucket--logos--24x24",
+      },
+      "text-4": {
+        text: "手搓功能 Bug 是真的巨多啊",
+      },
+      "icon-4": {
+        name: "social-photobucket--logos--24x24",
+      },
+    },
     data: {
       title: "测试",
       style: "test2",
       items: [
         {
-          text: "坐标的问题怎么解决",
+          text: "图标的坐标有问题",
           icon: "animal-horse--pets-animals--24x24",
         },
         {
@@ -35,23 +67,20 @@ onMounted(async () => {
           icon: "social-photobucket--logos--24x24",
         },
         {
-          text: "手搓功能 Bug 是真的巨多啊",
+          text: "两个人来开发人家几十人团队的项目",
           icon: "animal-horse--pets-animals--24x24",
+        },
+        {
+          text: "手搓功能 Bug 是真的巨多啊",
+          icon: "social-photobucket--logos--24x24",
         },
       ],
     },
-    onUpdateAddButtons: (values) => {
+    onUpdateControlButtons: (values) => {
       addButtonOptions.value = values;
     },
-    onInputPositionChange: (inputPosition) => {
-      console.log("inputPosition", inputPosition);
-
-      inputWrap.value = {...inputPosition};
-    },
-    onUpdateText: (callback) => {
-      if (inputWrap.value?.text && callback) {
-        callback(inputWrap.value.className, inputWrap.value?.text, inputWrap.value?.width);
-      }
+    onUpdateControlTexts: (values) => {
+      controlTextOptions.value = Object.keys(values).map((item) => values[item]);
     },
   });
 
@@ -59,12 +88,35 @@ onMounted(async () => {
 });
 
 const exportSVG = () => {
-  drawInst?.exportSVG();
+  drawInst?.export.svg();
 };
 
 const exportPNG = () => {
-  drawInst?.exportPNG();
+  drawInst?.export.png();
 };
+
+const controlTextTextareaRef = ref<HTMLTextAreaElement>();
+
+const openTextarea = (item: TextControlOption) => {
+  controlTextTextarea.value = item;
+
+  nextTick(() => {
+    controlTextTextareaRef.value?.focus();
+  });
+}
+
+const onBlur = (ev: Event) => {
+  console.log("onBlur", controlTextTextarea.value);
+
+  drawInst?.updateTextNew(
+    {
+      ...controlTextTextarea.value,
+      text: (ev.target as HTMLTextAreaElement).value,
+    }
+  );
+
+  controlTextTextarea.value = undefined;
+}
 </script>
 
 <template>
@@ -97,21 +149,36 @@ const exportPNG = () => {
         </span>
       </div>
 
-      <!-- 输入框 -->
+      <div class="text-controls">
+        <span
+          v-for="item in controlTextOptions"
+          :style="{
+            top: `${item.y}px`,
+            left: `${item.x}px`,
+            width: `${item.width}px`,
+            height: `${item.height}px`,
+          }"
+          @click="openTextarea(item)"
+        >
+        </span>
+      </div>
+
       <div
-        class="svg--input__container"
+        v-if="controlTextTextarea"
         :style="{
-          width: inputWrap?.width + 'px',
-          height: inputWrap?.height + 'px',
-          left: inputWrap?.x + 'px',
-          top: inputWrap?.y + 'px',
+          position: 'absolute',
+          width: controlTextTextarea?.width + 'px',
+          height: controlTextTextarea?.height + 'px',
+          left: controlTextTextarea?.x + 'px',
+          top: controlTextTextarea?.y + 'px',
         }"
       >
         <textarea
+          ref="controlTextTextareaRef"
           class="svg--input"
-          :style="{ textAlign: inputWrap.textAlign }"
-          v-show="inputWrap.x > 0"
+          :style="{ textAlign: controlTextTextarea.textAlign }"
           v-model="inputWrap.text"
+          @blur="onBlur"
         ></textarea>
       </div>
     </div>
@@ -146,5 +213,16 @@ const exportPNG = () => {
   padding: 4px;
   box-sizing: border-box;
   border-radius: 100px;
+}
+
+.text-controls span {
+  display: block;
+  cursor: pointer;
+  position: absolute;
+}
+
+.text-controls span:hover {
+  border: 2px solid #2292ff;
+  border-radius: 1em;
 }
 </style>
