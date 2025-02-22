@@ -76,32 +76,22 @@ onMounted(async () => {
     onUpdateControlTexts: (values) => {
       controlTextOptions.value = Object.keys(values).map((item) => values[item]);
     },
-    onInputPositionChange: (inputPosition) => {
-      console.log("inputPosition", inputPosition);
-
-      inputWrap.value = {...inputPosition};
-    },
-    onUpdateText: (callback) => {
-      if (inputWrap.value?.text && callback) {
-        callback(inputWrap.value.className, inputWrap.value?.text, inputWrap.value?.width);
-      }
-    },
   });
 
   console.log("drawInst", drawInst);
 });
 
 const exportSVG = () => {
-  drawInst?.exportSVG();
+  drawInst?.export.svg();
 };
 
 const exportPNG = () => {
-  drawInst?.exportPNG();
+  drawInst?.export.png();
 };
 
 const controlTextTextareaRef = ref<HTMLTextAreaElement>();
 
-const openTextarea = (item) => {
+const openTextarea = (item: TextPlaceHolderOption) => {
   controlTextTextarea.value = item;
 
   nextTick(() => {
@@ -109,13 +99,13 @@ const openTextarea = (item) => {
   });
 }
 
-const onBlur = (ev) => {
-  console.log(ev.target.value, controlTextTextarea.value);
+const onBlur = (ev: Event) => {
+  console.log("onBlur", controlTextTextarea.value);
 
   drawInst?.updateTextNew(
     {
       ...controlTextTextarea.value,
-      text: ev.target.value,
+      text: (ev.target as HTMLTextAreaElement).value,
     }
   );
 
@@ -183,24 +173,6 @@ const onBlur = (ev) => {
           :style="{ textAlign: controlTextTextarea.textAlign }"
           v-model="inputWrap.text"
           @blur="onBlur"
-        ></textarea>
-      </div>
-
-      <!-- 输入框 -->
-      <div
-        class="svg--input__container"
-        :style="{
-          width: inputWrap?.width + 'px',
-          height: inputWrap?.height + 'px',
-          left: inputWrap?.x + 'px',
-          top: inputWrap?.y + 'px',
-        }"
-      >
-        <textarea
-          class="svg--input"
-          :style="{ textAlign: inputWrap.textAlign }"
-          v-show="inputWrap.x > 0"
-          v-model="inputWrap.text"
         ></textarea>
       </div>
     </div>

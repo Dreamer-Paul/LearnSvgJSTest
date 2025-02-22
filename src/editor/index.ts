@@ -4,22 +4,12 @@ import {
   SVG,
   Text,
   type Svg,
-  G,
 } from "@svgdotjs/svg.js";
 import SmartArtData, { type ISmartArtData } from "./data";
 import SmartArtIcon from "./icon";
 import SmartArtStyle from "./style";
 import SmartArtText from "./text";
-
-interface IPosition {
-  className: string;
-  width: number;
-  height: number;
-  x: number;
-  y: number;
-  text: string;
-  textAlign: string;
-}
+import SmartArtExport from "./export";
 
 export interface IButton {
   x: number;
@@ -34,8 +24,6 @@ interface SmartArtEditorProps {
   data: ISmartArtData;
   onUpdateControlButtons: (v: IButton[]) => void;
   onUpdateControlTexts: (options: TextPlaceHolderOption[]) => void;
-  onInputPositionChange: (position: IPosition) => void;
-  onUpdateText: (fn: any) => void;
 }
 
 export interface TextPlaceHolderOption {
@@ -55,6 +43,8 @@ class SmartArtEditor {
   private text: SmartArtText;
   private style: SmartArtStyle;
 
+  export: SmartArtExport;
+
   // 背景
   private bgEl: SvgJSElement | undefined;
   // 文字
@@ -67,8 +57,6 @@ class SmartArtEditor {
 
   private onUpdateAddButtons: (v: IButton[]) => void;
   private onUpdateControlTexts: (options: TextPlaceHolderOption[]) => void;
-  private onInputPositionChange: (position: IPosition) => void;
-  private onUpdateText: (fn: any) => void;
 
   private currentEditor:
     | {
@@ -78,12 +66,9 @@ class SmartArtEditor {
     | undefined;
 
   constructor(props: SmartArtEditorProps) {
-    // this.el = props.el;
     this.template = props.template;
     this.onUpdateAddButtons = props.onUpdateControlButtons;
-    this.onInputPositionChange = props.onInputPositionChange;
     this.onUpdateControlTexts = props.onUpdateControlTexts;
-    this.onUpdateText = props.onUpdateText;
 
     this.draw = SVG().addTo(props.el);
 
@@ -91,6 +76,7 @@ class SmartArtEditor {
     this.icon = new SmartArtIcon(this.draw);
     this.text = new SmartArtText(this.draw);
     this.style = new SmartArtStyle(this.draw);
+    this.export = new SmartArtExport(this.draw);
 
     this.drawContext();
   }
@@ -222,42 +208,30 @@ class SmartArtEditor {
   drawText({
     content,
     width,
-    id,
     textAlign,
     element,
-    textNode,
   }: {
     content: string;
     width: number;
     id: string;
-    textAlign: string;
+    textAlign: "left" | "right" | "center";
     element?: Path;
-    textNode?: Text;
   }) {
-    // const group = this.draw.group(); // 创建一个 g 元素
-
-    const t = (textNode || this.draw).text((add) => {
+    const t = this.draw.text((add) => {
       const lines = this.text.wrapText(content, width);
 
       lines.forEach((line) => {
         const tspan = add.tspan(line.text).newLine();
 
         // 设置文本对齐方式
-        if (textAlign.includes("l")) {
+        if (textAlign === "left") {
           tspan.dx(0); // 左对齐
-        } else if (textAlign.includes("r")) {
+        } else if (textAlign === "right") {
           tspan.dx(width - line.width); // 右对齐
         } else {
           tspan.dx((width - line.width) / 2); // 居中对齐
         }
       });
-
-      if (!textNode) {
-        // add.addClass(id);
-        // add.addClass(`${id}-text`);
-        // add.id(`${id}-text`);
-        add.id(id);
-      }
 
       add.font({
         size: 24,
@@ -283,7 +257,7 @@ class SmartArtEditor {
   }: {
     text: string;
     width: number;
-    textAlign: string;
+    textAlign: "left" | "right" | "center";
     textNode: Text;
   }) {
     const t = textNode.text((add) => {
@@ -293,9 +267,9 @@ class SmartArtEditor {
         const tspan = add.tspan(line.text).newLine();
 
         // 设置文本对齐方式
-        if (textAlign.includes("l")) {
+        if (textAlign === "left") {
           tspan.dx(0); // 左对齐
-        } else if (textAlign.includes("r")) {
+        } else if (textAlign === "right") {
           tspan.dx(width - line.width); // 右对齐
         } else {
           tspan.dx((width - line.width) / 2); // 居中对齐
@@ -323,9 +297,9 @@ class SmartArtEditor {
       const id = element.id();
 
       // 新版 keyName，根据 keyName 获取和存储节点设置
-      const keyName = id.split("-").pop();
+      const [_, align, keyName] = id.split("-");
 
-      console.log("keyName", keyName);
+      console.log("keyName", keyName, align);
 
       let content = "";
 
@@ -340,16 +314,18 @@ class SmartArtEditor {
       const elementWidth = element.width() as number;
 
       const textAlign = (() => {
-        if (id.includes("l")) {
+        if (align.includes("l")) {
           return "left";
-        } else if (id.includes("r")) {
+        } else if (align.includes("r")) {
           return "right";
-        } else if (id.includes("c")) {
+        } else if (align.includes("c")) {
           return "center";
         }
 
         return "left";
       })() as TextPlaceHolderOption["textAlign"];
+
+      console.log(id, textAlign);
 
       g.push(
         this.drawText({
@@ -407,7 +383,7 @@ class SmartArtEditor {
     }
 
     if (textNode) {
-      this.drawText({ content: text, width, id: className, textNode });
+      // this.drawText({ content: text, width, id: className, textNode });
     }
   }
 
@@ -426,42 +402,6 @@ class SmartArtEditor {
       textNode,
     });
   }
-
-  exportSVG = () => {
-    const svgData = this.draw.svg();
-    const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "exported-image.svg";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  exportPNG = () => {
-    const svgData = this.draw.svg();
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    const img = new Image();
-    img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx?.drawImage(img, 0, 0);
-      canvas.toBlob((blob) => {
-        const url = URL.createObjectURL(blob!);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "exported-image.png";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      });
-    };
-    img.src = "data:image/svg+xml;base64," + btoa(svgData);
-  };
 
   addItem(index: number) {
     this.data.addItem(index);
