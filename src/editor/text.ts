@@ -20,10 +20,8 @@ class SmartArtText {
 
   wrapText(text: string, width: number) {
     const draw = this.draw;
-    const words = text.split("");
-    const lines = [];
-    let currentLine = "";
-    let currentLineWidth = 0;
+    const lines: { text: string; width: number; height: number }[] = [];
+    const paragraphs = text.split("\n");
 
     // 创建临时文本元素来测量宽度
     const tempText = draw.text("").font({
@@ -31,22 +29,32 @@ class SmartArtText {
       size: 24,
     });
 
-    words.forEach((word) => {
-      tempText.text(currentLine + word);
+    paragraphs.forEach((paragraph) => {
+      const words = paragraph.split("");
+      let currentLine = "";
+      let currentLineWidth = 0;
 
-      if (tempText.length() > width) {
+      words.forEach((word) => {
+        tempText.text(currentLine + word);
+
+        if (tempText.length() > width) {
+          lines.push({
+            text: currentLine,
+            width: currentLineWidth,
+            height: 24,
+          });
+          currentLine = word;
+          currentLineWidth = tempText.length();
+        } else {
+          currentLine += word;
+          currentLineWidth = tempText.length();
+        }
+      });
+
+      if (currentLine) {
         lines.push({ text: currentLine, width: currentLineWidth, height: 24 });
-        currentLine = word;
-        currentLineWidth = tempText.length();
-      } else {
-        currentLine += word;
-        currentLineWidth = tempText.length();
       }
     });
-
-    if (currentLine) {
-      lines.push({ text: currentLine, width: currentLineWidth, height: 24 });
-    }
 
     tempText.remove();
     return lines;
