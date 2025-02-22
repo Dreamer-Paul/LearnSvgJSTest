@@ -10,33 +10,37 @@ import SmartArtIcon from "./icon";
 import SmartArtStyle from "./style";
 import SmartArtText from "./text";
 import SmartArtExport from "./export";
+import SmartArtOption, { type ISmartArtOptionItem } from "./option";
 
-export interface IButton {
+export interface ItemControlOption {
   x: number;
   y: number;
   type: "add" | "remove";
   index: number;
 }
 
-interface SmartArtEditorProps {
-  el: string;
-  template: string;
-  data: ISmartArtData;
-  onUpdateControlButtons: (v: IButton[]) => void;
-  onUpdateControlTexts: (options: TextPlaceHolderOption[]) => void;
-}
-
-export interface TextPlaceHolderOption {
+export interface TextControlOption {
   id: string;
   x: number;
   y: number;
   width: number;
   height: number;
-  textAlign: "left" | "right" | "center" | undefined;
+  index: number;
+  textAlign: "left" | "right" | "center";
+}
+
+interface SmartArtEditorProps {
+  el: string;
+  template: string;
+  option: Record<string, ISmartArtOptionItem>;
+  data: ISmartArtData;
+  onUpdateControlButtons: (v: ItemControlOption[]) => void;
+  onUpdateControlTexts: (options: TextControlOption[]) => void;
 }
 
 class SmartArtEditor {
   private template: string;
+  private option: SmartArtOption;
   private data: SmartArtData;
   private draw: Svg;
   private icon: SmartArtIcon;
@@ -50,20 +54,16 @@ class SmartArtEditor {
   // 文字
   private textEl: SvgJSElement[] = [];
 
-  private textPlaceholdersOptions: Record<string, TextPlaceHolderOption> = {};
+  // 外部管理，操作控制符
+  private itemControlOptions: ItemControlOption[] = [];
+  private textPlaceholdersOptions: Record<string, TextControlOption> = {};
 
   // 图标
   private iconGroupsEl: SvgJSElement[] = [];
 
-  private onUpdateAddButtons: (v: IButton[]) => void;
-  private onUpdateControlTexts: (options: TextPlaceHolderOption[]) => void;
-
-  private currentEditor:
-    | {
-        id: string;
-        index: string | number | undefined;
-      }
-    | undefined;
+  // 回调
+  private onUpdateAddButtons: (v: ItemControlOption[]) => void;
+  private onUpdateControlTexts: (options: TextControlOption[]) => void;
 
   constructor(props: SmartArtEditorProps) {
     this.template = props.template;
@@ -72,6 +72,7 @@ class SmartArtEditor {
 
     this.draw = SVG().addTo(props.el);
 
+    this.option = new SmartArtOption(props.option);
     this.data = new SmartArtData(props.data);
     this.icon = new SmartArtIcon(this.draw);
     this.text = new SmartArtText(this.draw);
@@ -141,7 +142,7 @@ class SmartArtEditor {
     this.styleIcon();
     this.styleRect();
 
-    this.createControlButtons();
+    this.createItemControl();
   }
 
   styleIcon() {
@@ -171,17 +172,19 @@ class SmartArtEditor {
   /**
    * 向画布外添加增删管理按钮
    */
-  createControlButtons() {
+  createItemControl() {
+    // 重置
+    this.itemControlOptions = [];
+
     // 获取添加和删除的按钮
     const placeholderEls = this.draw.find("[id^='bt-']");
-    const buttonOptions: IButton[] = [];
 
     placeholderEls.each((item) => {
       const id = item.id();
       const index = parseInt(id.split("-").pop() || "0", 10) - 1;
 
       if (id.includes("add")) {
-        buttonOptions.push({
+        this.itemControlOptions.push({
           x: item.x() as number,
           y: item.y() as number,
           type: "add",
@@ -190,7 +193,7 @@ class SmartArtEditor {
 
         item.remove();
       } else if (id.includes("remove")) {
-        buttonOptions.push({
+        this.itemControlOptions.push({
           x: item.x() as number,
           y: item.y() as number,
           type: "remove",
@@ -201,7 +204,7 @@ class SmartArtEditor {
       }
     });
 
-    this.onUpdateAddButtons(buttonOptions);
+    this.onUpdateAddButtons(this.itemControlOptions);
   }
 
   // 绘制文字
@@ -301,14 +304,10 @@ class SmartArtEditor {
 
       console.log("keyName", keyName, align);
 
-      let content = "";
+      const content = this.option.getText(keyName)?.text;
 
-      if (id.includes("title")) {
-        content = this.data.title;
-      } else {
-        // Todo
-        const index = parseInt(id.split("-").pop() || "0", 10) - 1;
-        content = this.data.getItemText(index);
+      if (!content) {
+        return;
       }
 
       const elementWidth = element.width() as number;
@@ -323,9 +322,7 @@ class SmartArtEditor {
         }
 
         return "left";
-      })() as TextPlaceHolderOption["textAlign"];
-
-      console.log(id, textAlign);
+      })() as TextControlOption["textAlign"];
 
       g.push(
         this.drawText({
@@ -338,7 +335,7 @@ class SmartArtEditor {
       );
 
       this.textPlaceholdersOptions[id] = {
-        id,
+        id: `text-${keyName}`,
         x: el.x() as number,
         y: el.y() as number,
         width: el.width() as number,
@@ -368,30 +365,8 @@ class SmartArtEditor {
     this.styleRect();
   }
 
-  // 更新文本
-  updateText(className: string, text: string, width: number) {
-    const textNode = this.draw.findOne(className) as Text;
-
-    if (this.currentEditor) {
-      const { index } = this.currentEditor;
-
-      if (index && typeof index === "number") {
-        this.data.updateItem(index - 1, { text });
-      } else {
-        this.data.updateTitle(text);
-      }
-    }
-
-    if (textNode) {
-      // this.drawText({ content: text, width, id: className, textNode });
-    }
-  }
-
-  updateTextNew(data) {
-    // this.
+  updateTextNew(data: TextControlOption & { text: string }) {
     console.log("updateTextNew", data);
-    // return;
-    // const textNode = this.draw.findOne(`#${id}`) as Text;
 
     const textNode = this.textEl[data.index] as Text;
 
@@ -401,6 +376,8 @@ class SmartArtEditor {
       textAlign: data.textAlign,
       textNode,
     });
+
+    this.option.setItem(data.id, { text: data.text });
   }
 
   addItem(index: number) {

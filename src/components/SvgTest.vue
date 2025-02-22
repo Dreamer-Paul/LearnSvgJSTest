@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { nextTick, onMounted, ref, type CSSProperties } from "vue";
-import SmartArtEditor, { type IButton, type TextPlaceHolderOption } from "../editor";
+import SmartArtEditor, { type ItemControlOption, type TextControlOption } from "../editor";
 import { styleNames } from "../editor/style";
 import { Plus, Trash } from "lucide-vue-next";
 
@@ -14,10 +14,10 @@ const inputWrap = ref({
   textAlign: undefined as CSSProperties["text-align"] | undefined,
 });
 
-const addButtonOptions = ref<IButton[]>([]);
-const controlTextOptions = ref<TextPlaceHolderOption[]>([]);
+const addButtonOptions = ref<ItemControlOption[]>([]);
+const controlTextOptions = ref<TextControlOption[]>([]);
 
-const controlTextTextarea = ref<TextPlaceHolderOption | undefined>(undefined);
+const controlTextTextarea = ref<TextControlOption | undefined>(undefined);
 
 let drawInst: SmartArtEditor;
 
@@ -25,28 +25,34 @@ onMounted(async () => {
   drawInst = new SmartArtEditor({
     el: "#svg-container",
     template: "converge2-v1",
-    elOptions: {
-      "title": {
+    option: {
+      "text-title": {
         text: "测试标题",
       },
-      "item-1": {
+      "text-1": {
         text: "图标的坐标有问题",
       },
       "icon-1": {
-        icon: "animal-horse--pets-animals--24x24",
+        name: "animal-horse--pets-animals--24x24",
       },
-      "item-2": {
+      "text-2": {
         text: "两个人来开发人家几十人团队的项目",
       },
       "icon-2": {
-        icon: "animal-horse--pets-animals--24x24",
+        name: "animal-horse--pets-animals--24x24",
       },
-      "item-3": {
+      "text-3": {
         text: "手搓功能 Bug 是真的巨多啊",
       },
       "icon-3": {
-        icon: "social-photobucket--logos--24x24",
-      }
+        name: "social-photobucket--logos--24x24",
+      },
+      "text-4": {
+        text: "手搓功能 Bug 是真的巨多啊",
+      },
+      "icon-4": {
+        name: "social-photobucket--logos--24x24",
+      },
     },
     data: {
       title: "测试",
@@ -91,7 +97,7 @@ const exportPNG = () => {
 
 const controlTextTextareaRef = ref<HTMLTextAreaElement>();
 
-const openTextarea = (item: TextPlaceHolderOption) => {
+const openTextarea = (item: TextControlOption) => {
   controlTextTextarea.value = item;
 
   nextTick(() => {
