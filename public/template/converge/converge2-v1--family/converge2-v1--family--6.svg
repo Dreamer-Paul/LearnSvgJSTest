@@ -1,0 +1,53 @@
+<svg width="744" height="612" viewBox="0 0 744 612" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="converge2-v1--family--6">
+<g id="lines">
+<g id="g-6">
+<path id="Vector" d="M330.183 225.785L326 244.326L307.852 238.678L314.067 235.089L301.005 212.466C284.77 218.677 265.973 212.355 257.004 196.822C247.063 179.603 252.963 157.586 270.181 147.645C287.4 137.703 309.417 143.603 319.358 160.822C328.314 176.334 324.413 195.741 310.962 206.704L324.029 229.338L330.183 225.785Z" fill="#F2FAE1" stroke="#93C332" stroke-width="2"/>
+</g>
+<g id="g-5">
+<path id="Vector_2" d="M265.735 336.893L279.701 324L265.735 311.108L265.735 318.284L239.549 318.284C236.81 301.118 221.937 288 204 288C184.118 288 168 304.118 168 324C168 343.882 184.118 360 204 360C221.912 360 236.769 346.918 239.537 329.788L265.735 329.788L265.735 336.893Z" fill="#FEF2E6" stroke="#DB8333" stroke-width="2"/>
+</g>
+<g id="g-4">
+<path id="Vector_3" d="M330.033 422.475L325.85 403.934L307.702 409.582L313.917 413.17L300.824 435.848C284.589 429.637 265.792 435.958 256.823 451.492C246.882 468.711 252.781 490.728 270 500.669C287.219 510.61 309.236 504.711 319.177 487.492C328.133 471.98 324.232 452.573 310.781 441.61L323.88 418.922L330.033 422.475Z" fill="#E8F9FF" stroke="#17AEE1" stroke-width="2"/>
+</g>
+<g id="g-3">
+<path id="Vector_4" d="M436.298 409.582L418.15 403.934L413.967 422.474L420.182 418.886L433.275 441.564C419.779 452.519 415.855 471.958 424.823 487.492C434.764 504.711 456.781 510.61 474 500.669C491.219 490.728 497.118 468.711 487.177 451.492C478.221 435.98 459.463 429.655 443.244 435.822L430.145 413.134L436.298 409.582Z" fill="#FFEDEB" stroke="#DF5E59" stroke-width="2"/>
+</g>
+<g id="g-2">
+<path id="Vector_5" d="M477.965 336.893L464 324L477.965 311.108L477.965 318.284L504.089 318.284C506.828 301.118 521.701 288 539.638 288C559.52 288 575.638 304.118 575.638 324C575.638 343.882 559.52 360 539.638 360C521.726 360 506.869 346.918 504.1 329.788L477.965 329.788L477.965 336.893Z" fill="#E7FBF2" stroke="#3CC583" stroke-width="2"/>
+</g>
+<g id="g-1">
+<path id="Vector_6" d="M436.148 238.678L418 244.326L413.817 225.785L420.032 229.373L433.094 206.75C419.598 195.795 415.673 176.355 424.642 160.822C434.583 143.603 456.6 137.703 473.819 147.645C491.037 157.586 496.937 179.603 486.996 196.822C478.04 212.334 459.282 218.659 443.062 212.491L429.995 235.125L436.148 238.678Z" fill="#FEFBDB" stroke="#D1BD08" stroke-width="2"/>
+</g>
+<g id="g-0">
+<path id="cr-big" d="M444 323.996C444 284.232 411.765 251.996 372 251.996V251.996C332.236 251.996 300 284.232 300 323.996V323.996C300 363.761 332.236 395.996 372 395.996V395.996C411.765 395.996 444 363.761 444 323.996V323.996Z" fill="#F6F6F6" stroke="#BCBCBC" stroke-width="2"/>
+</g>
+</g>
+<path id="tx-rc-6" d="M84 144H240V216H84V144Z" fill="#FF0000" fill-opacity="0.1"/>
+<path id="tx-rc-5" d="M0 288H156V360H0L0 288Z" fill="#FF0000" fill-opacity="0.1"/>
+<path id="tx-rc-4" d="M84 432H240V504H84V432Z" fill="#FF0000" fill-opacity="0.1"/>
+<path id="tx-lc-3" d="M504 432H660V504H504V432Z" fill="#FF0000" fill-opacity="0.1"/>
+<path id="tx-lc-2" d="M588 288H744V360H588V288Z" fill="#FF0000" fill-opacity="0.1"/>
+<path id="tx-lc-1" d="M504 144H660V216H504V144Z" fill="#FF0000" fill-opacity="0.1"/>
+<path id="tx-cb-title" d="M72 48L672 48V96L72 96L72 48Z" fill="#FF0000" fill-opacity="0.1"/>
+<path id="ic-cc-end" d="M336 287.996H408V359.996H336V287.996Z" fill="#33DE7B" fill-opacity="0.1"/>
+<path id="ic-cc-5" d="M180 300H228V348H180V300Z" fill="#33DE7B" fill-opacity="0.1"/>
+<path id="ic-cc-2" d="M516 300H564V348H516V300Z" fill="#33DE7B" fill-opacity="0.1"/>
+<rect id="bt-cc-remove-2" x="570" y="312" width="24" height="24" fill="#1AC6FF" fill-opacity="0.2"/>
+<rect id="bt-cc-remove-5" x="150" y="312" width="24" height="24" fill="#1AC6FF" fill-opacity="0.2"/>
+<path id="ic-cc-3" d="M432 445.492H480V493.492H432V445.492Z" fill="#33DE7B" fill-opacity="0.1"/>
+<path id="ic-cc-6" d="M264 154.508H312V202.508H264V154.508Z" fill="#33DE7B" fill-opacity="0.1"/>
+<rect id="bt-cc-remove-6" x="255" y="130.135" width="24" height="24" fill="#1AC6FF" fill-opacity="0.2"/>
+<rect id="bt-cc-remove-3" x="465" y="493.865" width="24" height="24" fill="#1AC6FF" fill-opacity="0.2"/>
+<path id="ic-cc-4" d="M264 445.492H312V493.492H264V445.492Z" fill="#33DE7B" fill-opacity="0.1"/>
+<path id="ic-cc-1" d="M432 154.508H480V202.508H432V154.508Z" fill="#33DE7B" fill-opacity="0.1"/>
+<rect id="bt-cc-remove-1" x="465" y="130.135" width="24" height="24" fill="#1AC6FF" fill-opacity="0.2"/>
+<rect id="bt-cc-remove-4" x="255" y="493.865" width="24" height="24" fill="#1AC6FF" fill-opacity="0.2"/>
+<rect id="bt-cc-add-7" x="360" y="144" width="24" height="24" fill="#1AC6FF" fill-opacity="0.2"/>
+<rect id="bt-cc-add-6" x="214.508" y="228" width="24" height="24" fill="#1AC6FF" fill-opacity="0.2"/>
+<rect id="bt-cc-add-5" x="214.508" y="396" width="24" height="24" fill="#1AC6FF" fill-opacity="0.2"/>
+<rect id="bt-cc-add-4" x="360" y="480" width="24" height="24" fill="#1AC6FF" fill-opacity="0.2"/>
+<rect id="bt-cc-add-3" x="505.492" y="396" width="24" height="24" fill="#1AC6FF" fill-opacity="0.2"/>
+<rect id="bt-cc-add-2" x="505.492" y="228" width="24" height="24" fill="#1AC6FF" fill-opacity="0.2"/>
+</g>
+</svg>
