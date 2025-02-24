@@ -1,8 +1,16 @@
 <script setup lang="ts">
 import { nextTick, onMounted, ref } from "vue";
-import SmartArtEditor, { type ItemControlOption, type TextControlOption } from "../editor";
+import SmartArtEditor, {
+  type ItemControlOption,
+  type TextControlOption,
+} from "../editor";
 import { styleNames } from "../editor/style";
 import { Plus, Trash } from "lucide-vue-next";
+
+const inputText =
+  ref(`流萤是米哈游开发的电子游戏《崩坏：星穹铁道》中的虚构角色，属于游戏中的组织“星核猎手”。她的真实身份是基因改造人AR-26710，曾是格拉默共和国的作战兵器“格拉默铁骑”的一员。流萤的角色设定和故事情节深受玩家和评论员的喜爱，尤其是在情感表达和人物成长方面。
+流萤的外观特征包括银色的头发和独特的服饰设计，通常以机甲形态出现，化名为“萨姆”。她的设计灵感来源于“火萤”，象征着在黑暗中闪烁的光芒。流萤的故事围绕着她在格拉默共和国的悲惨经历展开，该共和国因虫群的入侵而覆灭。为了防止她的基因技术被外人利用，流萤体内被植入了名为“失熵症”的基因疾患，这使得她的身体逐渐消失，意识也变得模糊。
+在格拉默的毁灭后，流萤成为了星际难民，最终加入了“星核猎手”，以寻找生命的意义。她的角色设定强调了对“死亡”和“命运”的深刻理解，展现了她在绝望中追寻希望的旅程。`);
 
 const currentText = ref("");
 
@@ -17,6 +25,8 @@ onMounted(async () => {
   drawInst = new SmartArtEditor({
     el: "#svg-container",
     template: "converge2-v1",
+    count: 4,
+    style: "test2",
     option: {
       "text-title": {
         text: "测试标题",
@@ -108,7 +118,7 @@ const openTextarea = (item: TextControlOption) => {
     input.value = text;
     input.focus();
   });
-}
+};
 
 const onBlur = (ev: Event) => {
   if (!controlTextTextarea.value) {
@@ -117,18 +127,38 @@ const onBlur = (ev: Event) => {
 
   console.log("onBlur", controlTextTextarea.value);
 
-  drawInst?.updateTextNew(
-    {
-      ...controlTextTextarea.value,
-      text: (ev.target as HTMLTextAreaElement).value,
-    }
-  );
+  drawInst?.updateTextNew({
+    ...controlTextTextarea.value,
+    text: (ev.target as HTMLTextAreaElement).value,
+  });
 
   controlTextTextarea.value = undefined;
-}
+};
+
+const onClickGenerate = () => {
+  drawInst?.execDraw({
+    template: "converge-pins-v6",
+    count: 3,
+    option: {
+      "text-title": { text: "流萤角色档案" },
+      "text-1": { text: "基因改造战士" },
+      "text-1-desc": { text: "代号AR-26710的格拉默铁骑" },
+      "text-2": { text: "星际难民" },
+      "text-2-desc": { text: "携带失熵症的流浪者" },
+      "text-3": { text: "星核猎手" },
+      "text-3-desc": { text: "化名萨姆的寻道者" },
+    },
+  });
+};
 </script>
 
 <template>
+  <section>
+    <h2>输入待加工的文本</h2>
+    <textarea class="input-text" v-model="inputText" rows="8"></textarea>
+    <button>评分</button>
+    <button @click="onClickGenerate">生成</button>
+  </section>
   <section>
     <h2>SvgJS</h2>
     <div class="controls">
@@ -202,6 +232,12 @@ const onBlur = (ev: Event) => {
   </section>
 </template>
 <style scoped>
+.input-text {
+  width: 100%;
+  padding: 1em;
+  font: inherit;
+}
+
 .svg--conatiner:hover .add-remove-controls {
   opacity: 1;
 }

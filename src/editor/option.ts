@@ -34,6 +34,22 @@ class SmartArtOption {
   getIcon(name: string) {
     return this.data[`icon-${name}`] as ISmartArtOptionIconItem | undefined;
   }
+
+  getAllIconName() {
+    return [
+      ...new Set([
+        ...Object.keys(this.data)
+          .filter((key) => key.startsWith("icon-"))
+          .map((item) => {
+            const optionItem = this.data[item];
+            if ("name" in optionItem) {
+              return optionItem.name;
+            }
+            return "";
+          }),
+      ]),
+    ];
+  }
 }
 
 export default SmartArtOption;

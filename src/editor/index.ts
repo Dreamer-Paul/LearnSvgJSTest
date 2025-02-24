@@ -29,17 +29,22 @@ export interface TextControlOption {
   textAlign: "left" | "right" | "center";
 }
 
-interface SmartArtEditorProps {
-  el: string;
+interface SmartArtEditorBaseProps {
   template: string;
+  count: number;
   option: Record<string, ISmartArtOptionItem>;
+}
+
+interface SmartArtEditorProps extends SmartArtEditorBaseProps {
+  el: string;
   data: ISmartArtData;
-  onUpdateControlButtons: (v: ItemControlOption[]) => void;
-  onUpdateControlTexts: (options: TextControlOption[]) => void;
+  onUpdateControlButtons?: (options: ItemControlOption[]) => void;
+  onUpdateControlTexts?: (options: TextControlOption[]) => void;
 }
 
 class SmartArtEditor {
   private template: string;
+  private count: number = 0;
   private option: SmartArtOption;
   private data: SmartArtData;
   private draw: Svg;
@@ -62,13 +67,21 @@ class SmartArtEditor {
   private iconGroupsEl: SvgJSElement[] = [];
 
   // 回调
-  private onUpdateAddButtons: (v: ItemControlOption[]) => void;
-  private onUpdateControlTexts: (options: TextControlOption[]) => void;
+  private onUpdateAddButtons: ((options: ItemControlOption[]) => void) | undefined;
+  private onUpdateControlTexts: ((options: TextControlOption[]) => void) | undefined;
 
   constructor(props: SmartArtEditorProps) {
     this.template = props.template;
-    this.onUpdateAddButtons = props.onUpdateControlButtons;
-    this.onUpdateControlTexts = props.onUpdateControlTexts;
+
+    if (props.onUpdateControlButtons) {
+      this.onUpdateAddButtons = props.onUpdateControlButtons;
+    }
+
+    if (props.onUpdateControlTexts) {
+      this.onUpdateControlTexts = props.onUpdateControlTexts;
+    }
+
+    this.count = props.count;
 
     this.draw = SVG().addTo(props.el);
 
@@ -85,7 +98,7 @@ class SmartArtEditor {
   async getTemplate(templateName: string) {
     // 获取 SVG 文件内容
     const response = await fetch(
-      `/${templateName}--family--${this.data.count}.svg`
+      `/template/converge/${templateName}--family/${templateName}--family--${this.count}.svg`
     );
     const svgText = await response.text();
 
@@ -109,7 +122,7 @@ class SmartArtEditor {
     const [str, width, height] = await this.getTemplate(this.template);
 
     // 目前这个数据里面一共有什么图（包括重复的）
-    const a = this.data.getIcons();
+    const a = this.option.getAllIconName();
 
     // Todo: 临时操作，写的比较粗糙
     const icons = await this.icon.fetchIcons(a);
@@ -204,7 +217,7 @@ class SmartArtEditor {
       }
     });
 
-    this.onUpdateAddButtons(this.itemControlOptions);
+    this.onUpdateAddButtons?.(this.itemControlOptions);
   }
 
   // 绘制文字
@@ -244,10 +257,6 @@ class SmartArtEditor {
         add.translate(element.x() as number, (element.y() as number) + 24);
       }
     });
-
-    // if (!textNode) {
-    //   group.addClass(`${id}-group`); // 为 g 元素添加类名
-    // }
 
     return t;
   }
@@ -303,7 +312,10 @@ class SmartArtEditor {
       const id = element.id();
 
       // 新版 keyName，根据 keyName 获取和存储节点设置
-      const [_, align, keyName] = id.split("-");
+      const [_, align] = id.split("-", 2);
+      let keyName = id.substring(id.indexOf("-", id.indexOf("-") + 1) + 1);
+
+      // console.log("keyName", keyName, id.split("-", 3));
 
       const content = this.option.getText(keyName)?.text || "New Element";
 
@@ -345,13 +357,27 @@ class SmartArtEditor {
         textAlign,
       });
 
-      // el.remove();
+      el.remove();
     });
 
     this.textEl = g;
-    this.onUpdateControlTexts(this.textPlaceholdersOptions);
+    this.onUpdateControlTexts?.(this.textPlaceholdersOptions);
 
     return g;
+  }
+
+  /**
+   * 传入新的选项，重新绘制
+   */
+  execDraw(props: SmartArtEditorBaseProps) {
+    if (props.template) {
+      this.template = props.template;
+    }
+
+    this.count = props.count;
+    this.option.setData(props.option);
+
+    this.drawContext();
   }
 
   /**
