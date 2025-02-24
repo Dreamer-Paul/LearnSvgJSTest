@@ -56,7 +56,7 @@ class SmartArtEditor {
 
   // 外部管理，操作控制符
   private itemControlOptions: ItemControlOption[] = [];
-  private textPlaceholdersOptions: Record<string, TextControlOption> = {};
+  private textPlaceholdersOptions: TextControlOption[] = [];
 
   // 图标
   private iconGroupsEl: SvgJSElement[] = [];
@@ -291,6 +291,9 @@ class SmartArtEditor {
    * 存储原框架内包含的信息，渲染文字和编辑占位符
    */
   prepareText() {
+    // 重置
+    this.textPlaceholdersOptions = [];
+
     const elements = this.draw.find("[id^='tx-']");
 
     const g: Text[] = [];
@@ -302,7 +305,7 @@ class SmartArtEditor {
       // 新版 keyName，根据 keyName 获取和存储节点设置
       const [_, align, keyName] = id.split("-");
 
-      const content = this.option.getText(keyName)?.text;
+      const content = this.option.getText(keyName)?.text || "New Element";
 
       if (!content) {
         return;
@@ -332,7 +335,7 @@ class SmartArtEditor {
         })
       );
 
-      this.textPlaceholdersOptions[id] = {
+      this.textPlaceholdersOptions.push({
         id: keyName,
         x: el.x() as number,
         y: el.y() as number,
@@ -340,7 +343,7 @@ class SmartArtEditor {
         height: el.height() as number,
         index,
         textAlign,
-      };
+      });
 
       // el.remove();
     });

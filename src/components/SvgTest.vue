@@ -1,18 +1,10 @@
 <script setup lang="ts">
-import { nextTick, onMounted, ref, type CSSProperties } from "vue";
+import { nextTick, onMounted, ref } from "vue";
 import SmartArtEditor, { type ItemControlOption, type TextControlOption } from "../editor";
 import { styleNames } from "../editor/style";
 import { Plus, Trash } from "lucide-vue-next";
 
-const inputWrap = ref({
-  width: 0,
-  height: 0,
-  x: 0,
-  y: 0,
-  text: "",
-  className: "",
-  textAlign: undefined as CSSProperties["text-align"] | undefined,
-});
+const currentText = ref("");
 
 const addButtonOptions = ref<ItemControlOption[]>([]);
 const controlTextOptions = ref<TextControlOption[]>([]);
@@ -80,8 +72,7 @@ onMounted(async () => {
       addButtonOptions.value = values;
     },
     onUpdateControlTexts: (values) => {
-      // Todo
-      controlTextOptions.value = Object.keys(values).map((item) => values[item]);
+      controlTextOptions.value = values;
     },
   });
 
@@ -195,7 +186,7 @@ const onBlur = (ev: Event) => {
           ref="controlTextTextareaRef"
           class="svg--input"
           :style="{ textAlign: controlTextTextarea.textAlign }"
-          v-model="inputWrap.text"
+          v-model="currentText"
           @blur="onBlur"
         ></textarea>
       </div>
@@ -229,7 +220,6 @@ const onBlur = (ev: Event) => {
   position: absolute;
   background: red;
   padding: 4px;
-  box-sizing: border-box;
   border-radius: 100px;
 }
 
