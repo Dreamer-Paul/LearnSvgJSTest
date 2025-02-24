@@ -6,6 +6,7 @@ import SmartArtEditor, {
 } from "../editor";
 import { styleNames } from "../editor/style";
 import { Plus, Trash } from "lucide-vue-next";
+import { evaluateText, summaryToSmartArt } from "../services/api";
 
 const inputText =
   ref(`流萤是米哈游开发的电子游戏《崩坏：星穹铁道》中的虚构角色，属于游戏中的组织“星核猎手”。她的真实身份是基因改造人AR-26710，曾是格拉默共和国的作战兵器“格拉默铁骑”的一员。流萤的角色设定和故事情节深受玩家和评论员的喜爱，尤其是在情感表达和人物成长方面。
@@ -13,6 +14,8 @@ const inputText =
 在格拉默的毁灭后，流萤成为了星际难民，最终加入了“星核猎手”，以寻找生命的意义。她的角色设定强调了对“死亡”和“命运”的深刻理解，展现了她在绝望中追寻希望的旅程。`);
 
 const currentText = ref("");
+const evaluationFirstMap = ref<string | undefined>();
+const evaluationResult = ref("");
 
 const addButtonOptions = ref<ItemControlOption[]>([]);
 const controlTextOptions = ref<TextControlOption[]>([]);
@@ -135,7 +138,42 @@ const onBlur = (ev: Event) => {
   controlTextTextarea.value = undefined;
 };
 
-const onClickGenerate = () => {
+const onClickEvaluate = async () => {
+  try {
+    const result = await evaluateText(inputText.value);
+    evaluationResult.value = JSON.stringify(result, null, 2);
+    evaluationFirstMap.value = result.data.scores[0];
+  } catch (error) {
+    console.error("Error evaluating text:", error);
+    evaluationResult.value = "Error evaluating text.";
+  }
+};
+
+const onClickSummary = async () => {
+  if (evaluationFirstMap.value === undefined) {
+    alert("请先评分");
+    return;
+  }
+
+  try {
+    const result = await summaryToSmartArt(
+      inputText.value,
+      evaluationFirstMap.value
+    );
+
+    console.log("result", result.data.summary);
+
+    drawInst?.execDraw({
+      template: "converge-pins-v6",
+      count: 3,
+      option: result.data.summary,
+    });
+  } catch (error) {
+    console.error("Error summary text:", error);
+  }
+};
+
+const onClickTestRedraw = () => {
   drawInst?.execDraw({
     template: "converge-pins-v6",
     count: 3,
@@ -156,8 +194,10 @@ const onClickGenerate = () => {
   <section>
     <h2>输入待加工的文本</h2>
     <textarea class="input-text" v-model="inputText" rows="8"></textarea>
-    <button>评分</button>
-    <button @click="onClickGenerate">生成</button>
+    <button @click="onClickEvaluate">评分</button>
+    <button @click="onClickSummary">生成</button>
+    <button @click="onClickTestRedraw">测试切换图形</button>
+    <pre>{{ evaluationResult }}</pre>
   </section>
   <section>
     <h2>SvgJS</h2>
