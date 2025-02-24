@@ -11,6 +11,7 @@ import SmartArtStyle from "./style";
 import SmartArtText from "./text";
 import SmartArtExport from "./export";
 import SmartArtOption, { type ISmartArtOptionItem } from "./option";
+import { getXY } from "./utils";
 
 export interface ItemControlOption {
   x: number;
@@ -67,8 +68,12 @@ class SmartArtEditor {
   private iconGroupsEl: SvgJSElement[] = [];
 
   // 回调
-  private onUpdateAddButtons: ((options: ItemControlOption[]) => void) | undefined;
-  private onUpdateControlTexts: ((options: TextControlOption[]) => void) | undefined;
+  private onUpdateAddButtons:
+    | ((options: ItemControlOption[]) => void)
+    | undefined;
+  private onUpdateControlTexts:
+    | ((options: TextControlOption[]) => void)
+    | undefined;
 
   constructor(props: SmartArtEditorProps) {
     this.template = props.template;
@@ -196,25 +201,27 @@ class SmartArtEditor {
       const id = item.id();
       const index = parseInt(id.split("-").pop() || "0", 10) - 1;
 
+      const { x, y } = getXY(item);
+
+      let type: "add" | "remove" = "add";
+
       if (id.includes("add")) {
-        this.itemControlOptions.push({
-          x: item.x() as number,
-          y: item.y() as number,
-          type: "add",
-          index,
-        });
-
-        item.remove();
+        type = "add";
       } else if (id.includes("remove")) {
-        this.itemControlOptions.push({
-          x: item.x() as number,
-          y: item.y() as number,
-          type: "remove",
-          index,
-        });
-
-        item.remove();
+        type = "remove";
+      } else {
+        // 异常情况，暂不处理
+        return;
       }
+
+      this.itemControlOptions.push({
+        x,
+        y,
+        type,
+        index,
+      });
+
+      item.remove();
     });
 
     this.onUpdateAddButtons?.(this.itemControlOptions);
@@ -347,10 +354,12 @@ class SmartArtEditor {
         })
       );
 
+      const { x, y } = getXY(el);
+
       this.textPlaceholdersOptions.push({
         id: keyName,
-        x: el.x() as number,
-        y: el.y() as number,
+        x,
+        y,
         width: el.width() as number,
         height: el.height() as number,
         index,
@@ -391,7 +400,6 @@ class SmartArtEditor {
     this.styleIcon();
     this.styleRect();
   }
-
 
   /**
    * 获取文本

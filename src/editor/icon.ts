@@ -1,5 +1,6 @@
 import { G, type Element, type Svg } from "@svgdotjs/svg.js";
 import type SmartArtData from "./data";
+import { getXY } from "./utils";
 
 export interface ISmartArtDataItem {
   text: string;
@@ -110,7 +111,9 @@ class SmartArtIcon {
       // 居中对齐
       const offsetY = (elHeight - (iconElement.height() as number)) / 2;
 
-      g.translate(el.x() as number, (el.y() as number) + offsetY);
+      const { x, y } = getXY(el);
+
+      g.translate(x, y + offsetY);
 
       groups.push(g);
 
