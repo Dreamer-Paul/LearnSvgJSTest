@@ -7,6 +7,7 @@ import SmartArtEditor, {
 import { styleNames } from "../editor/style";
 import { Plus, Trash } from "lucide-vue-next";
 import { evaluateText, summaryToSmartArt } from "../services/api";
+import { getTemplate } from "../editor/template";
 
 const inputText =
   ref(`流萤是米哈游开发的电子游戏《崩坏：星穹铁道》中的虚构角色，属于游戏中的组织“星核猎手”。她的真实身份是基因改造人AR-26710，曾是格拉默共和国的作战兵器“格拉默铁骑”的一员。流萤的角色设定和故事情节深受玩家和评论员的喜爱，尤其是在情感表达和人物成长方面。
@@ -27,9 +28,9 @@ let drawInst: SmartArtEditor;
 onMounted(async () => {
   drawInst = new SmartArtEditor({
     el: "#svg-container",
-    template: "converge2-v1",
+    template: "converge/converge2-v1--family/converge2-v1--family",
     count: 4,
-    style: "test2",
+    // style: "test2",
     option: {
       "text-title": {
         text: "测试标题",
@@ -163,9 +164,18 @@ const onClickSummary = async () => {
 
     console.log("result", result.data.summary);
 
+    const template = getTemplate(evaluationFirstMap.value, result.data.count);
+
+    console.log(evaluationFirstMap.value, result.data.count);
+
+    if (!template) {
+      alert("生成失败");
+      return;
+    }
+
     drawInst?.execDraw({
-      template: "converge-pins-v6",
-      count: 3,
+      template: `${evaluationFirstMap.value}/${template.name}/${template.name}`,
+      count: result.data.count,
       option: result.data.summary,
     });
   } catch (error) {
@@ -175,7 +185,7 @@ const onClickSummary = async () => {
 
 const onClickTestRedraw = () => {
   drawInst?.execDraw({
-    template: "converge-pins-v6",
+    template: "converge/converge-pins-v6--family/converge-pins-v6",
     count: 3,
     option: {
       "text-title": { text: "流萤角色档案" },

@@ -10,6 +10,7 @@ declare namespace API {
   }
 
   interface SummaryToSmartArtResponse {
+    count: number;
     summary: Record<string, any>;
   }
 }

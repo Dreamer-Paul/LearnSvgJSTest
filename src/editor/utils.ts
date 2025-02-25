@@ -6,6 +6,7 @@ export const getXY = (el: Element) => {
 
   return {
     x: el.x() as number || matrix.e,
+    // 如果元素旋转了 180 度，还需要 - el.height()
     y: el.y() as number || matrix.f,
   };
 }

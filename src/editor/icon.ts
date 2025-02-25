@@ -106,8 +106,6 @@ class SmartArtIcon {
       const scale = elWidth / (iconElement.width() as number);
       iconElement.size(elWidth, (iconElement.height() as number) * scale);
 
-      console.log((iconElement.height() as number) * scale);
-
       // 居中对齐
       const offsetY = (elHeight - (iconElement.height() as number)) / 2;
 
