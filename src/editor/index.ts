@@ -155,7 +155,7 @@ class SmartArtEditor {
     });
 
     this.prepareText();
-    this.iconGroupsEl = this.icon.drawIcons(this.data);
+    this.iconGroupsEl = this.icon.drawIcons(this.option);
 
     this.styleIcon();
     this.styleRect();
@@ -429,12 +429,24 @@ class SmartArtEditor {
     this.option.setItem(`text-${data.id}`, { text: data.text });
   }
 
+  /**
+   * 添加新的元素
+   * @param index
+   */
   addItem(index: number) {
-    this.data.addItem(index);
+    this.option.addItem(index, { text: "New Element" });
+    this.count++;
+
     this.drawContext();
   }
+  /**
+   * 移除元素
+   * @param index
+   */
   removeItem(index: number) {
-    this.data.removeItem(index);
+    this.option.removeItem(index);
+    this.count--;
+
     this.drawContext();
   }
 }

@@ -1,6 +1,6 @@
 import { G, type Element, type Svg } from "@svgdotjs/svg.js";
-import type SmartArtData from "./data";
 import { getXY } from "./utils";
+import type SmartArtOption from "./option";
 
 export interface ISmartArtDataItem {
   text: string;
@@ -72,7 +72,7 @@ class SmartArtIcon {
    * 绘制图标
    * @param icon
    */
-  drawIcons(data: SmartArtData) {
+  drawIcons(options: SmartArtOption) {
     const elements = this.draw.find("[id^='ic-']");
 
     const iconGroup = this.draw.group();
@@ -82,19 +82,18 @@ class SmartArtIcon {
 
     elements.each((el) => {
       const id = el.id();
-      const index = parseInt(id.split("-").pop() || "0", 10) - 1;
 
-      if (Number.isNaN(index)) {
-        return;
-      }
+      // 新版 keyName，根据 keyName 获取和存储节点设置
+      const [_, align] = id.split("-", 2);
+      let keyName = id.substring(id.indexOf("-", id.indexOf("-") + 1) + 1);
 
-      const iconName = data.getItemIcon(index);
+      const iconName = options.getIcon(keyName);
 
       if (!iconName) {
         return;
       }
 
-      const icon = this.map[iconName];
+      const icon = this.map[iconName.name];
 
       const elWidth = el.width() as number;
       const elHeight = el.height() as number;

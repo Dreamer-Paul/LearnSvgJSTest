@@ -7,7 +7,7 @@ import SmartArtEditor, {
 import { styleNames } from "../editor/style";
 import { Plus, Trash } from "lucide-vue-next";
 import { evaluateText, summaryToSmartArt } from "../services/api";
-import { getTemplate } from "../editor/template";
+import { getTemplate, type ISmartArtTemplate, type TemplateCategory } from "../editor/template";
 
 const inputText =
   ref(`流萤是米哈游开发的电子游戏《崩坏：星穹铁道》中的虚构角色，属于游戏中的组织“星核猎手”。她的真实身份是基因改造人AR-26710，曾是格拉默共和国的作战兵器“格拉默铁骑”的一员。流萤的角色设定和故事情节深受玩家和评论员的喜爱，尤其是在情感表达和人物成长方面。
@@ -15,8 +15,8 @@ const inputText =
 在格拉默的毁灭后，流萤成为了星际难民，最终加入了“星核猎手”，以寻找生命的意义。她的角色设定强调了对“死亡”和“命运”的深刻理解，展现了她在绝望中追寻希望的旅程。`);
 
 const currentText = ref("");
-const evaluationFirstMap = ref<string | undefined>();
-const evaluationResult = ref("");
+const evaluationResult = ref<TemplateCategory[]>();
+const evaluationResultJson = ref("");
 
 const addButtonOptions = ref<ItemControlOption[]>([]);
 const controlTextOptions = ref<TextControlOption[]>([]);
@@ -54,7 +54,7 @@ onMounted(async () => {
         name: "social-photobucket--logos--24x24",
       },
       "text-4": {
-        text: "手搓功能 Bug 是真的巨多啊",
+        text: "这个 AI 也好难调教",
       },
       "icon-4": {
         name: "social-photobucket--logos--24x24",
@@ -142,16 +142,16 @@ const onBlur = (ev: Event) => {
 const onClickEvaluate = async () => {
   try {
     const result = await evaluateText(inputText.value);
-    evaluationResult.value = JSON.stringify(result, null, 2);
-    evaluationFirstMap.value = result.data.scores[0];
+    evaluationResultJson.value = JSON.stringify(result, null, 2);
+    evaluationResult.value = result.data.scores as TemplateCategory[];
   } catch (error) {
     console.error("Error evaluating text:", error);
-    evaluationResult.value = "Error evaluating text.";
+    evaluationResultJson.value = "Error evaluating text.";
   }
 };
 
 const onClickSummary = async () => {
-  if (evaluationFirstMap.value === undefined) {
+  if (evaluationResult.value === undefined) {
     alert("请先评分");
     return;
   }
@@ -159,22 +159,28 @@ const onClickSummary = async () => {
   try {
     const result = await summaryToSmartArt(
       inputText.value,
-      evaluationFirstMap.value
+      evaluationResult.value[0]
     );
 
     console.log("result", result.data.summary);
 
-    const template = getTemplate(evaluationFirstMap.value, result.data.count);
+    const templates: ISmartArtTemplate[] = [];
 
-    console.log(evaluationFirstMap.value, result.data.count);
+    evaluationResult.value.forEach((item) => {
+      const template = getTemplate(item, result.data.count);
 
-    if (!template) {
+      if (template) {
+        templates.push(...template);
+      }
+    });
+
+    if (templates.length === 0) {
       alert("生成失败");
       return;
     }
 
     drawInst?.execDraw({
-      template: `${evaluationFirstMap.value}/${template.name}/${template.name}`,
+      template: `${templates[0].type}/${templates[0].name}/${templates[0].name}`,
       count: result.data.count,
       option: result.data.summary,
     });
@@ -204,10 +210,12 @@ const onClickTestRedraw = () => {
   <section>
     <h2>输入待加工的文本</h2>
     <textarea class="input-text" v-model="inputText" rows="8"></textarea>
-    <button @click="onClickEvaluate">评分</button>
-    <button @click="onClickSummary">生成</button>
-    <button @click="onClickTestRedraw">测试切换图形</button>
-    <pre>{{ evaluationResult }}</pre>
+    <div class="controls">
+      <button @click="onClickEvaluate">评分</button>
+      <button @click="onClickSummary">生成</button>
+      <button @click="onClickTestRedraw">测试切换图形</button>
+    </div>
+    <pre v-if="evaluationResultJson">{{ evaluationResultJson }}</pre>
   </section>
   <section>
     <h2>SvgJS</h2>
