@@ -37,7 +37,7 @@ class SmartArtText {
       words.forEach((word) => {
         tempText.text(currentLine + word);
 
-        if (tempText.length() > width) {
+        if (tempText.length() >= width) {
           lines.push({
             text: currentLine,
             width: currentLineWidth,

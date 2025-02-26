@@ -191,7 +191,7 @@ const onClickSummary = async () => {
 
 const onClickTestRedraw = () => {
   drawInst?.execDraw({
-    template: "converge/converge-pins-v6--family/converge-pins-v6",
+    template: "converge/converge-pins-v6--family/converge-pins-v6--family",
     count: 3,
     option: {
       "text-title": { text: "流萤角色档案" },

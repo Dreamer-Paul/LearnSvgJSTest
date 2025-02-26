@@ -60,15 +60,12 @@ class SmartArtOption {
     const newData: Record<string, ISmartArtOptionItem> = {};
 
     Object.keys(this.data).forEach((key) => {
-      const match = key.match(/(text|icon)-(\d+)/);
+      const match = key.match(/(text|icon)-(\d+)(.*)/);
       if (match) {
-        const [, type, id] = match;
-
-        console.log(id);
-
+        const [, type, id, suffix] = match;
         const numId = parseInt(id, 10);
         if (numId >= index) {
-          newData[`${type}-${numId + 1}`] = this.data[key];
+          newData[`${type}-${numId + 1}${suffix}`] = this.data[key];
         } else {
           newData[key] = this.data[key];
         }
@@ -85,15 +82,13 @@ class SmartArtOption {
     const newData: Record<string, ISmartArtOptionItem> = {};
 
     Object.keys(this.data).forEach((key) => {
-      const match = key.match(/(text|icon)-(\d+)/);
+      const match = key.match(/(text|icon)-(\d+)(.*)/);
       if (match) {
-        const [, type, id] = match;
+        const [, type, id, suffix] = match;
         const numId = parseInt(id, 10);
         if (numId > index) {
-          newData[`${type}-${numId - 1}`] = this.data[key];
+          newData[`${type}-${numId - 1}${suffix}`] = this.data[key];
         } else if (numId < index) {
-          console.log("numId", numId, index, this.data[key]);
-
           newData[key] = this.data[key];
         }
       } else {
