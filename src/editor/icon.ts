@@ -1,6 +1,7 @@
 import { G, type Element, type Svg } from "@svgdotjs/svg.js";
 import { getXY } from "./utils";
 import type SmartArtOption from "./option";
+import type { TextControlOption } from ".";
 
 export interface ISmartArtDataItem {
   text: string;
@@ -15,7 +16,8 @@ export type ISmartArtMap = Record<string, string>;
 
 class SmartArtIcon {
   private draw: Svg;
-  private map: ISmartArtMap = {};
+
+  map: ISmartArtMap = {};
 
   constructor(draw: Svg) {
     this.draw = draw;
@@ -66,58 +68,25 @@ class SmartArtIcon {
   /**
    * 绘制一个图标
    */
-  drawIcon(placeholder: Element) {}
+  drawIcon(icon: TextControlOption, name: string) {
+    const iconStr = this.map[name];
 
-  /**
-   * 绘制图标
-   * @param icon
-   */
-  drawIcons(options: SmartArtOption) {
-    const elements = this.draw.find("[id^='ic-']");
+    const elWidth = icon.width;
+    const elHeight = icon.height;
 
-    const iconGroup = this.draw.group();
-    iconGroup.addClass("ic-group");
+    const g = this.draw.group();
+    const iconElement = g.svg(iconStr).first();
 
-    const groups: G[] = [];
+    // 等比缩放图标到 48 的宽度
+    const scale = elWidth / (iconElement.width() as number);
+    iconElement.size(elWidth, (iconElement.height() as number) * scale);
 
-    elements.each((el) => {
-      const id = el.id();
+    // 居中对齐
+    const offsetY = (elHeight - (iconElement.height() as number)) / 2;
 
-      // 新版 keyName，根据 keyName 获取和存储节点设置
-      const [_, align] = id.split("-", 2);
-      let keyName = id.substring(id.indexOf("-", id.indexOf("-") + 1) + 1);
+    g.translate(icon.x, icon.y + offsetY);
 
-      const iconName = options.getIcon(keyName);
-
-      if (!iconName) {
-        return;
-      }
-
-      const icon = this.map[iconName.name];
-
-      const elWidth = el.width() as number;
-      const elHeight = el.height() as number;
-
-      const g = iconGroup.group();
-      const iconElement = g.svg(icon).first();
-
-      // 等比缩放图标到 48 的宽度
-      const scale = elWidth / (iconElement.width() as number);
-      iconElement.size(elWidth, (iconElement.height() as number) * scale);
-
-      // 居中对齐
-      const offsetY = (elHeight - (iconElement.height() as number)) / 2;
-
-      const { x, y } = getXY(el);
-
-      g.translate(x, y + offsetY);
-
-      groups.push(g);
-
-      el.remove();
-    });
-
-    return groups;
+    return g;
   }
 
   /**

@@ -21,6 +21,10 @@ class SmartArtOption {
     this.data = nextData;
   }
 
+  getItem(name: string) {
+    return this.data[name];
+  }
+
   setItem(name: string, value: ISmartArtOptionItem) {
     this.data[name] = value;
   }
@@ -51,7 +55,7 @@ class SmartArtOption {
     ];
   }
 
-  addItem(index: number, value: ISmartArtOptionItem) {
+  addItem(index: number) {
     index = index + 1;
     const newData: Record<string, ISmartArtOptionItem> = {};
 
@@ -72,9 +76,6 @@ class SmartArtOption {
         newData[key] = this.data[key];
       }
     });
-
-    // Todo: 后续应该是模板比较缺少的 Option 然后添加
-    newData[`text-${index}`] = value;
 
     this.data = newData;
   }
@@ -99,8 +100,6 @@ class SmartArtOption {
         newData[key] = this.data[key];
       }
     });
-
-    // Todo: 后续应该是模板比较缺少的 Option 然后移除
 
     this.data = newData;
   }

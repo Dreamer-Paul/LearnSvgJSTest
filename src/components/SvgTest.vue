@@ -131,7 +131,7 @@ const onBlur = (ev: Event) => {
 
   console.log("onBlur", controlTextTextarea.value);
 
-  drawInst?.updateTextNew({
+  drawInst?.updateText({
     ...controlTextTextarea.value,
     text: (ev.target as HTMLTextAreaElement).value,
   });

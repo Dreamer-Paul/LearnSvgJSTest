@@ -4,6 +4,7 @@ import {
   SVG,
   Text,
   type Svg,
+  G,
 } from "@svgdotjs/svg.js";
 import SmartArtData, { type ISmartArtData } from "./data";
 import SmartArtIcon from "./icon";
@@ -63,6 +64,7 @@ class SmartArtEditor {
   // 外部管理，操作控制符
   private itemControlOptions: ItemControlOption[] = [];
   private textPlaceholdersOptions: TextControlOption[] = [];
+  private iconPlaceholdersOptions: TextControlOption[] = [];
 
   // 图标
   private iconGroupsEl: SvgJSElement[] = [];
@@ -155,7 +157,38 @@ class SmartArtEditor {
     });
 
     this.prepareText();
-    this.iconGroupsEl = this.icon.drawIcons(this.option);
+    this.prepareIcon();
+
+    // 新模板的 Options 包含什么 Keys，做补全和删除
+    const optionKeys = [
+      ...this.textPlaceholdersOptions.map((item) => `text-${item.id}`),
+      ...this.iconPlaceholdersOptions.map((item) => `icon-${item.id}`),
+    ];
+
+    const nextOption: Record<string, ISmartArtOptionItem> = {};
+
+    optionKeys.forEach((key) => {
+      const item = this.option.getItem(key);
+
+      if (item) {
+        nextOption[key] = item;
+      } else if (key.startsWith("text")) {
+        nextOption[key] = { text: "New Element" };
+      } else if (key.startsWith("icon")) {
+        nextOption[key] = { name: "social-photobucket--logos--24x24" };
+      }
+    });
+
+    this.option.setData(nextOption);
+
+    // 画图标
+    this.iconGroupsEl = this.iconPlaceholdersOptions.map((item) => {
+      const option = this.option.getIcon(item.id);
+
+      if (option) {
+        return this.icon.drawIcon(item, option.name);
+      }
+    }) as G[];
 
     this.styleIcon();
     this.styleRect();
@@ -304,7 +337,7 @@ class SmartArtEditor {
   }
 
   /**
-   * 存储原框架内包含的信息，渲染文字和编辑占位符
+   * 存储原骨架图的可编辑文本框信息
    */
   prepareText() {
     // 重置
@@ -376,6 +409,41 @@ class SmartArtEditor {
   }
 
   /**
+   * 存储原骨架图的图标信息
+   */
+  prepareIcon() {
+    this.iconPlaceholdersOptions = [];
+
+    const elements = this.draw.find("[id^='ic-']");
+
+    const groups: G[] = [];
+
+    elements.each((el, index) => {
+      const id = el.id();
+
+      // 新版 keyName，根据 keyName 获取和存储节点设置
+      const [_, align] = id.split("-", 2);
+      let keyName = id.substring(id.indexOf("-", id.indexOf("-") + 1) + 1);
+
+      const { x, y } = getXY(el);
+
+      this.iconPlaceholdersOptions.push({
+        id: keyName,
+        x,
+        y,
+        width: el.width() as number,
+        height: el.height() as number,
+        index,
+        textAlign: "center",
+      });
+
+      el.remove();
+    });
+
+    return groups;
+  }
+
+  /**
    * 传入新的选项，重新绘制
    */
   execDraw(props: SmartArtEditorBaseProps) {
@@ -414,7 +482,7 @@ class SmartArtEditor {
    * 更新文本
    * @param data
    */
-  updateTextNew(data: TextControlOption & { text: string }) {
+  updateText(data: TextControlOption & { text: string }) {
     console.log("updateTextNew", data);
 
     const textNode = this.textEl[data.index] as Text;
@@ -434,7 +502,7 @@ class SmartArtEditor {
    * @param index
    */
   addItem(index: number) {
-    this.option.addItem(index, { text: "New Element" });
+    this.option.addItem(index);
     this.count++;
 
     this.drawContext();
