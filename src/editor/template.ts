@@ -13,6 +13,7 @@ const types = [
   "prism",
   "quadrant",
   "sector",
+  "converge",
   "sequence",
   "stairs",
   "timeline",
@@ -260,6 +261,7 @@ const templates: Record<TemplateCategory, ISmartArtTemplate[]> = {
   sector: [
     { name: "sector-atom-v1--family", type: "sector", min: 2, max: 8 },
     { name: "sector-color-v6--family", type: "sector", min: 2, max: 8 },
+    { name: "sector-color2-v7--family", type: "sector", min: 2, max: 8 },
     {
       name: "sector-cutaway-v1--family",
       type: "sector",
@@ -292,12 +294,26 @@ const templates: Record<TemplateCategory, ISmartArtTemplate[]> = {
       max: 6,
     },
   ],
+  converge: [
+    {
+      name: "converge-pins-v6--family",
+      type: "converge",
+      min: 2,
+      max: 6,
+    },
+    {
+      name: "converge2-v1--family",
+      type: "converge",
+      min: 3,
+      max: 10,
+    },
+  ],
   sequence: [
     {
-      name: "sequence-diagonal-road-v1--family",
+      name: "sequence-journey-thin-v1--family",
       type: "sequence",
       min: 2,
-      max: 5,
+      max: 8,
     },
     {
       name: "sequence-journey-bold-v2--family",
@@ -306,7 +322,31 @@ const templates: Record<TemplateCategory, ISmartArtTemplate[]> = {
       max: 8,
     },
     {
+      name: "sequence-diagonal-road-v1--family",
+      type: "sequence",
+      min: 2,
+      max: 5,
+    },
+    {
+      name: "sequence-mountain-v1--family",
+      type: "sequence",
+      min: 2,
+      max: 5,
+    },
+    {
+      name: "sequence-roadmap-v4--family",
+      type: "sequence",
+      min: 2,
+      max: 5,
+    },
+    {
       name: "sequence-pipeline-v5--family",
+      type: "sequence",
+      min: 2,
+      max: 6,
+    },
+    {
+      name: "sequence-strip-v2--family",
       type: "sequence",
       min: 2,
       max: 6,

@@ -105,7 +105,7 @@ class SmartArtEditor {
   async getTemplate(templateName: string) {
     // 获取 SVG 文件内容
     const response = await fetch(
-      `/template/${templateName}--${this.count}.svg`
+      `/templates/${templateName}--${this.count}.svg`
     );
     const svgText = await response.text();
 

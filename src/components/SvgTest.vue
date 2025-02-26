@@ -30,7 +30,7 @@ let drawInst: SmartArtEditor;
 onMounted(async () => {
   drawInst = new SmartArtEditor({
     el: "#svg-container",
-    template: "converge/converge2-v1--family/converge2-v1--family",
+    template: "converge2-v1--family",
     count: 4,
     // style: "test2",
     option: {
@@ -185,7 +185,7 @@ const onClickSummary = async () => {
     summaryResult.value = result.data;
 
     drawInst?.execDraw({
-      template: `${templates[0].type}/${templates[0].name}/${templates[0].name}`,
+      template: templates[0].name,
       count: result.data.count,
       option: result.data.summary,
     });
@@ -203,7 +203,7 @@ const onClickUseTemplate = (index: number) => {
   const item = summaryTemplates.value[index];
 
   drawInst?.execDraw({
-    template: `${item.type}/${item.name}/${item.name}`,
+    template: item.name,
     count: summaryResult.value.count,
     option: summaryResult.value.summary,
   });
@@ -211,7 +211,7 @@ const onClickUseTemplate = (index: number) => {
 
 const onClickTestRedraw = () => {
   drawInst?.execDraw({
-    template: "converge/converge-pins-v6--family/converge-pins-v6--family",
+    template: "converge-pins-v6--family",
     count: 3,
     option: {
       "text-title": { text: "流萤角色档案" },
