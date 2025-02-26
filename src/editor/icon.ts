@@ -1,6 +1,4 @@
-import { G, type Element, type Svg } from "@svgdotjs/svg.js";
-import { getXY } from "./utils";
-import type SmartArtOption from "./option";
+import { type Svg } from "@svgdotjs/svg.js";
 import type { TextControlOption } from ".";
 
 export interface ISmartArtDataItem {

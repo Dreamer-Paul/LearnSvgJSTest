@@ -17,6 +17,8 @@ const inputText =
 const currentText = ref("");
 const evaluationResult = ref<TemplateCategory[]>();
 const evaluationResultJson = ref("");
+const summaryTemplates = ref<ISmartArtTemplate[]>([]);
+const summaryResult = ref<API.SummaryToSmartArtResponse | undefined>();
 
 const addButtonOptions = ref<ItemControlOption[]>([]);
 const controlTextOptions = ref<TextControlOption[]>([]);
@@ -179,6 +181,9 @@ const onClickSummary = async () => {
       return;
     }
 
+    summaryTemplates.value = templates;
+    summaryResult.value = result.data;
+
     drawInst?.execDraw({
       template: `${templates[0].type}/${templates[0].name}/${templates[0].name}`,
       count: result.data.count,
@@ -188,6 +193,21 @@ const onClickSummary = async () => {
     console.error("Error summary text:", error);
   }
 };
+
+const onClickUseTemplate = (index: number) => {
+  if (summaryResult.value === undefined) {
+    alert("请先生成");
+    return;
+  }
+
+  const item = summaryTemplates.value[index];
+
+  drawInst?.execDraw({
+    template: `${item.type}/${item.name}/${item.name}`,
+    count: summaryResult.value.count,
+    option: summaryResult.value.summary,
+  });
+}
 
 const onClickTestRedraw = () => {
   drawInst?.execDraw({
@@ -278,6 +298,14 @@ const onClickTestRedraw = () => {
           @blur="onBlur"
         ></textarea>
       </div>
+    </div>
+    <div v-if="summaryTemplates.length > 0" class="style-selection">
+      <h3>切换图形</h3>
+      <p>
+        <button v-for="(item, index) in summaryTemplates" @click="onClickUseTemplate(index)">
+          {{ item.name }}
+        </button>
+      </p>
     </div>
     <div class="style-selection">
       <h3>切换样式</h3>

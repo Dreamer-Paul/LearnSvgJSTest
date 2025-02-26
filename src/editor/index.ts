@@ -387,14 +387,14 @@ class SmartArtEditor {
         })
       );
 
-      const { x, y } = getXY(el);
+      const { x, y, width, height } = getXY(el);
 
       this.textPlaceholdersOptions.push({
         id: keyName,
         x,
         y,
-        width: el.width() as number,
-        height: el.height() as number,
+        width: width || el.width() as number,
+        height: height || el.height() as number,
         index,
         textAlign,
       });
