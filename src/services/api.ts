@@ -1,7 +1,7 @@
 export async function evaluateText(
   text: string
 ): Promise<API.Response<API.EvaluateResponse>> {
-  const response = await fetch("http://10.0.1.123:5888/api/ai/evaluate", {
+  const response = await fetch(`${import.meta.env.APP_API_BASEURL}/ai/evaluate`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -20,7 +20,7 @@ export async function summaryToSmartArt(
   text: string,
   type: string
 ): Promise<API.Response<API.SummaryToSmartArtResponse>> {
-  const response = await fetch("http://10.0.1.123:5888/api/ai/summary", {
+  const response = await fetch(`${import.meta.env.APP_API_BASEURL}/ai/summary`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

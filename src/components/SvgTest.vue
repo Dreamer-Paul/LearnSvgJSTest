@@ -6,8 +6,10 @@ import SmartArtEditor, {
 } from "../editor";
 import { styleNames } from "../editor/style";
 import { Plus, Trash } from "lucide-vue-next";
-import { evaluateText, summaryToSmartArt } from "../services/api";
-import { getTemplate, type ISmartArtTemplate, type TemplateCategory } from "../editor/template";
+import { summaryToSmartArt } from "../services/api";
+import { getTemplate, type ISmartArtTemplate } from "../editor/template";
+import useEvaluation from "../hooks/use-evaluation";
+import useSummary from "../hooks/use-summary";
 
 const inputText =
   ref(`流萤是米哈游开发的电子游戏《崩坏：星穹铁道》中的虚构角色，属于游戏中的组织“星核猎手”。她的真实身份是基因改造人AR-26710，曾是格拉默共和国的作战兵器“格拉默铁骑”的一员。流萤的角色设定和故事情节深受玩家和评论员的喜爱，尤其是在情感表达和人物成长方面。
@@ -15,10 +17,6 @@ const inputText =
 在格拉默的毁灭后，流萤成为了星际难民，最终加入了“星核猎手”，以寻找生命的意义。她的角色设定强调了对“死亡”和“命运”的深刻理解，展现了她在绝望中追寻希望的旅程。`);
 
 const currentText = ref("");
-const evaluationResult = ref<TemplateCategory[]>();
-const evaluationResultJson = ref("");
-const summaryTemplates = ref<ISmartArtTemplate[]>([]);
-const summaryResult = ref<API.SummaryToSmartArtResponse | undefined>();
 
 const addButtonOptions = ref<ItemControlOption[]>([]);
 const controlTextOptions = ref<TextControlOption[]>([]);
@@ -141,73 +139,61 @@ const onBlur = (ev: Event) => {
   controlTextTextarea.value = undefined;
 };
 
-const onClickEvaluate = async () => {
-  try {
-    const result = await evaluateText(inputText.value);
-    evaluationResultJson.value = JSON.stringify(result, null, 2);
-    evaluationResult.value = result.data.scores as TemplateCategory[];
-  } catch (error) {
-    console.error("Error evaluating text:", error);
-    evaluationResultJson.value = "Error evaluating text.";
-  }
-};
+//
+// 评分
+//
+const { evaluationResult, evaluationResultJson, startEvaluation } =
+  useEvaluation();
+
+const onClickEvaluate = () => startEvaluation(inputText.value);
+
+//
+// 生成
+//
+const { summaryTemplates, summaryResults, startSummary } = useSummary();
 
 const onClickSummary = async () => {
-  if (evaluationResult.value === undefined) {
+  if (evaluationResult.value.length === 0) {
     alert("请先评分");
     return;
   }
 
-  try {
-    const result = await summaryToSmartArt(
-      inputText.value,
-      evaluationResult.value[0]
-    );
+  await startSummary(inputText.value, evaluationResult.value);
 
-    console.log("result", result.data.summary);
-
-    const templates: ISmartArtTemplate[] = [];
-
-    evaluationResult.value.forEach((item) => {
-      const template = getTemplate(item, result.data.count);
-
-      if (template) {
-        templates.push(...template);
-      }
-    });
-
-    if (templates.length === 0) {
-      alert("生成失败");
-      return;
-    }
-
-    summaryTemplates.value = templates;
-    summaryResult.value = result.data;
-
-    drawInst?.execDraw({
-      template: templates[0].name,
-      count: result.data.count,
-      option: result.data.summary,
-    });
-  } catch (error) {
-    console.error("Error summary text:", error);
+  if (summaryResults.value.length === 0) {
+    return;
   }
+
+  console.log("summaryResults", summaryResults.value);
+
+  drawInst?.execDraw({
+    template: summaryTemplates.value[0][0].name,
+    count: summaryResults.value[0].count,
+    option: summaryResults.value[0].summary,
+  });
 };
 
-const onClickUseTemplate = (index: number) => {
-  if (summaryResult.value === undefined) {
+const onClickUseTemplate = (cateIndex: number, index: number) => {
+  if (!summaryResults.value) {
     alert("请先生成");
     return;
   }
 
-  const item = summaryTemplates.value[index];
+  const item = summaryTemplates.value[cateIndex][index];
+
+  console.log(
+    "切换模板",
+    item.name,
+    item.type,
+    summaryResults.value[cateIndex].summary
+  );
 
   drawInst?.execDraw({
     template: item.name,
-    count: summaryResult.value.count,
-    option: summaryResult.value.summary,
+    count: summaryResults.value[cateIndex].count,
+    option: summaryResults.value[cateIndex].summary,
   });
-}
+};
 
 const onClickTestRedraw = () => {
   drawInst?.execDraw({
@@ -235,7 +221,9 @@ const onClickTestRedraw = () => {
       <button @click="onClickSummary">生成</button>
       <button @click="onClickTestRedraw">测试切换图形</button>
     </div>
-    <pre v-if="evaluationResultJson">{{ evaluationResultJson }}</pre>
+    <pre v-if="evaluationResultJson" class="code">{{
+      evaluationResultJson
+    }}</pre>
   </section>
   <section>
     <h2>SvgJS</h2>
@@ -301,11 +289,16 @@ const onClickTestRedraw = () => {
     </div>
     <div v-if="summaryTemplates.length > 0" class="style-selection">
       <h3>切换图形</h3>
-      <p>
-        <button v-for="(item, index) in summaryTemplates" @click="onClickUseTemplate(index)">
+      <div v-for="(category, cateIndex) in evaluationResult">
+        <p>{{ category }}</p>
+        <button
+          v-for="(item, index) in summaryTemplates[cateIndex]"
+          @click="onClickUseTemplate(cateIndex, index)"
+        >
           {{ item.name }}
         </button>
-      </p>
+      </div>
+      <p></p>
     </div>
     <div class="style-selection">
       <h3>切换样式</h3>
@@ -318,6 +311,11 @@ const onClickTestRedraw = () => {
   </section>
 </template>
 <style scoped>
+.code {
+  overflow: auto;
+  max-height: 30em;
+}
+
 .input-text {
   width: 100%;
   padding: 1em;

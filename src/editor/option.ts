@@ -30,7 +30,7 @@ class SmartArtOption {
   }
 
   getText(name: string) {
-    console.log(this.data, `text-${name}`);
+    // console.log(this.data, `text-${name}`);
 
     return this.data[`text-${name}`] as ISmartArtOptionTextItem | undefined;
   }

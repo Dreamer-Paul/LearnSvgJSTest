@@ -262,16 +262,17 @@ class SmartArtEditor {
 
   // 绘制文字
   drawText({
+    x,
+    y,
     content,
     width,
     textAlign,
-    element,
   }: {
+    x: number;
+    y: number;
     content: string;
     width: number;
-    id: string;
     textAlign: "left" | "right" | "center";
-    element?: Path;
   }) {
     const t = this.draw.text((add) => {
       const lines = this.text.wrapText(content, width);
@@ -293,9 +294,7 @@ class SmartArtEditor {
         size: 24,
       });
 
-      if (element) {
-        add.translate(element.x() as number, (element.y() as number) + 24);
-      }
+      add.translate(x as number, y + 24);
     });
 
     return t;
@@ -377,17 +376,17 @@ class SmartArtEditor {
         return "left";
       })() as TextControlOption["textAlign"];
 
+      const { x, y, width, height } = getXY(el);
+
       g.push(
         this.drawText({
+          x,
+          y,
           textAlign,
           content: content,
           width: elementWidth,
-          id: `${id}-text`,
-          element,
         })
       );
-
-      const { x, y, width, height } = getXY(el);
 
       this.textPlaceholdersOptions.push({
         id: keyName,

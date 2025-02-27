@@ -420,6 +420,15 @@ const templates: Record<TemplateCategory, ISmartArtTemplate[]> = {
 };
 
 export const getTemplate = (type: TemplateCategory, count: number) => {
+  // Todo: 临时操作
+  // @ts-ignore
+  type = type.replace("honeycomb", "keyIdeas");
+
+  if (!templates[type]) {
+    console.log("type not found", type);
+    return;
+  }
+
   const availableTemplates = templates[type].filter((template) => {
     return count >= (template.min || 0) && count <= (template.max || Infinity);
   });
