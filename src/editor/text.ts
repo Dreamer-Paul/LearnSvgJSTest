@@ -18,7 +18,7 @@ class SmartArtText {
     this.draw = draw;
   }
 
-  wrapText(text: string, width: number) {
+  wrapText(text: string, size: number, width: number) {
     const draw = this.draw;
     const lines: { text: string; width: number; height: number }[] = [];
     const paragraphs = text.split("\n");
@@ -26,7 +26,7 @@ class SmartArtText {
     // 创建临时文本元素来测量宽度
     const tempText = draw.text("").font({
       // family: 'Arial',
-      size: 24,
+      size,
     });
 
     paragraphs.forEach((paragraph) => {
@@ -41,7 +41,7 @@ class SmartArtText {
           lines.push({
             text: currentLine,
             width: currentLineWidth,
-            height: 24,
+            height: size,
           });
           currentLine = word;
           currentLineWidth = tempText.length();
@@ -52,7 +52,7 @@ class SmartArtText {
       });
 
       if (currentLine) {
-        lines.push({ text: currentLine, width: currentLineWidth, height: 24 });
+        lines.push({ text: currentLine, width: currentLineWidth, height: size });
       }
     });
 

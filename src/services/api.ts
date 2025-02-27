@@ -18,14 +18,14 @@ export async function evaluateText(
 
 export async function summaryToSmartArt(
   text: string,
-  type: string
+  cate: string
 ): Promise<API.Response<API.SummaryToSmartArtResponse>> {
   const response = await fetch(`${import.meta.env.APP_API_BASEURL}/ai/summary`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ text, type }),
+    body: JSON.stringify({ text, cate }),
   });
 
   if (!response.ok) {

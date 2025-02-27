@@ -433,9 +433,5 @@ export const getTemplate = (type: TemplateCategory, count: number) => {
     return count >= (template.min || 0) && count <= (template.max || Infinity);
   });
 
-  if (availableTemplates.length === 0) {
-    return;
-  }
-
   return availableTemplates;
 };

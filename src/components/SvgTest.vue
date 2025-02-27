@@ -6,8 +6,6 @@ import SmartArtEditor, {
 } from "../editor";
 import { styleNames } from "../editor/style";
 import { Plus, Trash } from "lucide-vue-next";
-import { summaryToSmartArt } from "../services/api";
-import { getTemplate, type ISmartArtTemplate } from "../editor/template";
 import useEvaluation from "../hooks/use-evaluation";
 import useSummary from "../hooks/use-summary";
 
@@ -164,7 +162,7 @@ const onClickSummary = async () => {
     return;
   }
 
-  console.log("summaryResults", summaryResults.value);
+  console.log("summaryResults", summaryResults.value, summaryTemplates.value);
 
   drawInst?.execDraw({
     template: summaryTemplates.value[0][0].name,

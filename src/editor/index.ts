@@ -264,18 +264,20 @@ class SmartArtEditor {
   drawText({
     x,
     y,
+    size = 20,
     content,
     width,
     textAlign,
   }: {
     x: number;
     y: number;
+    size: number;
     content: string;
     width: number;
     textAlign: "left" | "right" | "center";
   }) {
     const t = this.draw.text((add) => {
-      const lines = this.text.wrapText(content, width);
+      const lines = this.text.wrapText(content, size, width);
 
       lines.forEach((line) => {
         const tspan = add.tspan(line.text).newLine();
@@ -291,10 +293,10 @@ class SmartArtEditor {
       });
 
       add.font({
-        size: 24,
+        size,
       });
 
-      add.translate(x as number, y + 24);
+      add.translate(x as number, y + size);
     });
 
     return t;
@@ -382,6 +384,7 @@ class SmartArtEditor {
         this.drawText({
           x,
           y,
+          size: 18,
           textAlign,
           content: content,
           width: elementWidth,

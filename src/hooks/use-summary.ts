@@ -16,12 +16,12 @@ const useSummary = () => {
         types.map((item) => summaryToSmartArt(text, item))
       );
 
-      types.forEach((type, index) => {
+      summaryTemplates.value = types.map((type) => {
         const template = getTemplate(type, results[0].data.count);
 
-        if (template) {
-          summaryTemplates.value[index] = template;
-        }
+        console.log("匹配 template", type, template);
+
+        return template || [];
       });
 
       summaryResults.value = results.map((result) => result.data);
