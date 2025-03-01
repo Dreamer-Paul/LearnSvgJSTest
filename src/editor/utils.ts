@@ -30,7 +30,7 @@ export const getXY = (el: Element) => {
     const [x, y, width, height] = position.split(";").map((item) => parseInt(item.split(":")[1]));
     const parentPosition = getParentPosition(el.parent());
 
-    console.log(el.id(), width, height);
+    console.log("getXY", el.id(), width, height);
 
     return { x: x + parentPosition.x, y: y + parentPosition.y, width, height };
   }
@@ -41,5 +41,39 @@ export const getXY = (el: Element) => {
     x: el.x() as number || matrix.e,
     // 如果元素旋转了 180 度，还需要 - el.height()
     y: el.y() as number || matrix.f,
+  };
+};
+
+// 获取元素相对于画布的标准位置
+export const getBoundingClientRect = (el: Element): { x: number; y: number; width: number; height: number } => {
+  const position = el.attr("data-position") as string;
+
+  const rect = el.node.getBoundingClientRect();
+  const svg = el.root().node as SVGSVGElement;
+  const svgRect = svg.getBoundingClientRect();
+
+  if (position) {
+    const [x, y, width, height] = position.split(";").map((item) => parseInt(item.split(":")[1]));
+    // const parentPosition = getParentPosition(el.parent());
+
+    // console.log("getXY", el.id(), width, height);
+
+    // return { x: x + parentPosition.x, y: y + parentPosition.y, width, height };
+
+    return {
+      x: rect.left - svgRect.left,
+      y: rect.top - svgRect.top,
+      width,
+      height,
+    }
+  }
+
+
+
+  return {
+    x: rect.left - svgRect.left,
+    y: rect.top - svgRect.top,
+    width: rect.width,
+    height: rect.height,
   };
 };

@@ -17,7 +17,7 @@ const types = [
   "sequence",
   "stairs",
   "timeline",
-  "venn",
+  // "venn",
   "versus",
 ] as const;
 
@@ -123,12 +123,12 @@ const templates: Record<TemplateCategory, ISmartArtTemplate[]> = {
       min: 2,
       max: 6,
     },
-    {
-      name: "impact-hexagons-v1--family",
-      type: "impact",
-      min: 3,
-      max: 7,
-    },
+    // {
+    //   name: "impact-hexagons-v1--family",
+    //   type: "impact",
+    //   min: 3,
+    //   max: 7,
+    // },
   ],
   keyIdeas: [
     {
@@ -406,16 +406,16 @@ const templates: Record<TemplateCategory, ISmartArtTemplate[]> = {
       max: 10,
     },
   ],
-  venn: [
-    { name: "venn-hexagon-v1--family", type: "venn", min: 2, max: 3 },
-    { name: "venn2-color-v1--family", type: "venn", min: 2, max: 3 },
-    {
-      name: "venn2-one-color-v1--family",
-      type: "venn",
-      min: 2,
-      max: 3,
-    },
-  ],
+  // venn: [
+  //   { name: "venn-hexagon-v1--family", type: "venn", min: 2, max: 3 },
+  //   { name: "venn2-color-v1--family", type: "venn", min: 2, max: 3 },
+  //   {
+  //     name: "venn2-one-color-v1--family",
+  //     type: "venn",
+  //     min: 2,
+  //     max: 3,
+  //   },
+  // ],
   versus: [{ name: "versus-v3--family", type: "versus", min: 2, max: 2 }],
 };
 

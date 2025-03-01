@@ -12,7 +12,7 @@ import SmartArtStyle from "./style";
 import SmartArtText from "./text";
 import SmartArtExport from "./export";
 import SmartArtOption, { type ISmartArtOptionItem } from "./option";
-import { getXY } from "./utils";
+import { getBoundingClientRect, getXY } from "./utils";
 
 export interface ItemControlOption {
   x: number;
@@ -234,7 +234,7 @@ class SmartArtEditor {
       const id = item.id();
       const index = parseInt(id.split("-").pop() || "0", 10) - 1;
 
-      const { x, y } = getXY(item);
+      const { x, y } = getBoundingClientRect(item);
 
       let type: "add" | "remove" = "add";
 
@@ -303,18 +303,20 @@ class SmartArtEditor {
   }
 
   renderTextUpdate({
+    size = 20,
     text,
     width,
     textAlign,
     textNode,
   }: {
+    size: number;
     text: string;
     width: number;
     textAlign: "left" | "right" | "center";
     textNode: Text;
   }) {
     const t = textNode.text((add) => {
-      const lines = this.text.wrapText(text, width);
+      const lines = this.text.wrapText(text, size, width);
 
       lines.forEach((line) => {
         const tspan = add.tspan(line.text).newLine();
@@ -330,7 +332,7 @@ class SmartArtEditor {
       });
 
       add.font({
-        size: 24,
+        size,
       });
     });
 
@@ -378,7 +380,7 @@ class SmartArtEditor {
         return "left";
       })() as TextControlOption["textAlign"];
 
-      const { x, y, width, height } = getXY(el);
+      const { x, y, width, height } = getBoundingClientRect(el);
 
       g.push(
         this.drawText({
@@ -387,7 +389,7 @@ class SmartArtEditor {
           size: 18,
           textAlign,
           content: content,
-          width: elementWidth,
+          width: width || elementWidth,
         })
       );
 
@@ -395,7 +397,7 @@ class SmartArtEditor {
         id: keyName,
         x,
         y,
-        width: width || el.width() as number,
+        width: width || elementWidth,
         height: height || el.height() as number,
         index,
         textAlign,
@@ -427,7 +429,7 @@ class SmartArtEditor {
       const [_, align] = id.split("-", 2);
       let keyName = id.substring(id.indexOf("-", id.indexOf("-") + 1) + 1);
 
-      const { x, y } = getXY(el);
+      const { x, y } = getBoundingClientRect(el);
 
       this.iconPlaceholdersOptions.push({
         id: keyName,
@@ -491,6 +493,7 @@ class SmartArtEditor {
 
     this.renderTextUpdate({
       text: data.text,
+      size: 18,
       width: data.width,
       textAlign: data.textAlign,
       textNode,

@@ -16,8 +16,8 @@ const useSummary = () => {
         types.map((item) => summaryToSmartArt(text, item))
       );
 
-      summaryTemplates.value = types.map((type) => {
-        const template = getTemplate(type, results[0].data.count);
+      summaryTemplates.value = types.map((type, index) => {
+        const template = getTemplate(type, results[index].data.count);
 
         console.log("匹配 template", type, template);
 
