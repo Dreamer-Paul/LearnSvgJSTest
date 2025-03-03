@@ -37,7 +37,9 @@ class SmartArtText {
       words.forEach((word) => {
         tempText.text(currentLine + word);
 
-        if (tempText.length() >= width) {
+        console.log("tempText", tempText, tempText.length(), width);
+
+        if (tempText.length() + 18 >= width) {
           lines.push({
             text: currentLine,
             width: currentLineWidth,
@@ -52,7 +54,11 @@ class SmartArtText {
       });
 
       if (currentLine) {
-        lines.push({ text: currentLine, width: currentLineWidth, height: size });
+        lines.push({
+          text: currentLine,
+          width: currentLineWidth,
+          height: size,
+        });
       }
     });
 

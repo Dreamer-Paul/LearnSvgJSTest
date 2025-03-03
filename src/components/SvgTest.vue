@@ -279,7 +279,9 @@ const onClickTestRedraw = () => {
         <textarea
           ref="controlTextTextareaRef"
           class="svg--input"
-          :style="{ textAlign: controlTextTextarea.textAlign }"
+          :style="{
+            textAlign: controlTextTextarea.textAlign,
+          }"
           v-model="currentText"
           @blur="onBlur"
         ></textarea>
