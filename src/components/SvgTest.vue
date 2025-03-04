@@ -28,7 +28,7 @@ onMounted(async () => {
     el: "#svg-container",
     template: "converge2-v1--family",
     count: 4,
-    // style: "test2",
+    style: "test2",
     option: {
       "text-title": {
         text: "测试标题",
@@ -37,48 +37,26 @@ onMounted(async () => {
         text: "图标的坐标有问题",
       },
       "icon-1": {
-        name: "animal-horse--pets-animals--24x24",
+        name: "home-heart-fill",
       },
       "text-2": {
         text: "两个人来开发人家几十人团队的项目",
       },
       "icon-2": {
-        name: "animal-horse--pets-animals--24x24",
+        name: "bank-line",
       },
       "text-3": {
         text: "手搓功能 Bug 是真的巨多啊",
       },
       "icon-3": {
-        name: "social-photobucket--logos--24x24",
+        name: "vip-crown-line",
       },
       "text-4": {
         text: "这个 AI 也好难调教",
       },
       "icon-4": {
-        name: "social-photobucket--logos--24x24",
+        name: "weight-line",
       },
-    },
-    data: {
-      title: "测试",
-      style: "test2",
-      items: [
-        {
-          text: "图标的坐标有问题",
-          icon: "animal-horse--pets-animals--24x24",
-        },
-        {
-          text: "为什么这个项目这么难做",
-          icon: "social-photobucket--logos--24x24",
-        },
-        {
-          text: "两个人来开发人家几十人团队的项目",
-          icon: "animal-horse--pets-animals--24x24",
-        },
-        {
-          text: "手搓功能 Bug 是真的巨多啊",
-          icon: "social-photobucket--logos--24x24",
-        },
-      ],
     },
     onUpdateControlButtons: (values) => {
       addButtonOptions.value = values;

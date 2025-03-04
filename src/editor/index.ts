@@ -6,7 +6,6 @@ import {
   type Svg,
   G,
 } from "@svgdotjs/svg.js";
-import SmartArtData, { type ISmartArtData } from "./data";
 import SmartArtIcon from "./icon";
 import SmartArtStyle from "./style";
 import SmartArtText from "./text";
@@ -34,12 +33,12 @@ export interface TextControlOption {
 interface SmartArtEditorBaseProps {
   template: string;
   count: number;
+  style?: string;
   option: Record<string, ISmartArtOptionItem>;
 }
 
 interface SmartArtEditorProps extends SmartArtEditorBaseProps {
   el: string;
-  data: ISmartArtData;
   onUpdateControlButtons?: (options: ItemControlOption[]) => void;
   onUpdateControlTexts?: (options: TextControlOption[]) => void;
 }
@@ -48,11 +47,11 @@ class SmartArtEditor {
   private template: string;
   private count: number = 0;
   private option: SmartArtOption;
-  private data: SmartArtData;
   private draw: Svg;
   private icon: SmartArtIcon;
   private text: SmartArtText;
   private style: SmartArtStyle;
+  private _style: string = "default";
 
   export: SmartArtExport;
 
@@ -90,10 +89,13 @@ class SmartArtEditor {
 
     this.count = props.count;
 
+    if (props.style) {
+      this._style = props.style;
+    }
+
     this.draw = SVG().addTo(props.el);
 
     this.option = new SmartArtOption(props.option);
-    this.data = new SmartArtData(props.data);
     this.icon = new SmartArtIcon(this.draw);
     this.text = new SmartArtText(this.draw);
     this.style = new SmartArtStyle(this.draw);
@@ -136,7 +138,7 @@ class SmartArtEditor {
 
     // Todo: 图标素材入库，下次最好不再请求图片资源
     a.forEach((i, index) => {
-      this.icon.addToMap(i, icons[index]);
+      icons[index] && this.icon.addToMap(i, icons[index]);
     });
 
     this.draw.clear();
@@ -148,7 +150,7 @@ class SmartArtEditor {
     this.draw.svg(str as string);
     this.draw.size(width, height);
 
-    this.style.setBackgroundStyle(this.bgEl, this.data.style);
+    this.style.setBackgroundStyle(this.bgEl, this._style);
 
     // 设置渐变填充
     const gradient = this.draw.gradient("linear", (add) => {
@@ -175,7 +177,7 @@ class SmartArtEditor {
       } else if (key.startsWith("text")) {
         nextOption[key] = { text: "New Element" };
       } else if (key.startsWith("icon")) {
-        nextOption[key] = { name: "social-photobucket--logos--24x24" };
+        nextOption[key] = { name: "bug-line" };
       }
     });
 
@@ -197,19 +199,19 @@ class SmartArtEditor {
   }
 
   styleIcon() {
-    const styleItem = this.style.getStyleItem(this.data.style);
+    const styleItem = this.style.getStyleItem(this._style);
 
     if (!styleItem || !styleItem.icon) {
       return;
     }
 
     this.iconGroupsEl.forEach((group, index) => {
-      this.style.setIconStyle(group, styleItem, index);
+      group && this.style.setIconStyle(group, styleItem, index);
     });
   }
 
   styleRect() {
-    const styleItem = this.style.getStyleItem(this.data.style);
+    const styleItem = this.style.getStyleItem(this._style);
 
     if (!styleItem || !styleItem.rect) {
       return;
@@ -466,9 +468,9 @@ class SmartArtEditor {
    * @param {string} styleName
    */
   changeStyle(styleName: string) {
-    this.data.updateStyle(styleName);
+    this._style = styleName;
 
-    this.bgEl && this.style.setBackgroundStyle(this.bgEl, this.data.style);
+    this.bgEl && this.style.setBackgroundStyle(this.bgEl, this._style);
     this.styleIcon();
     this.styleRect();
   }

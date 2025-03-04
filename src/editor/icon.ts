@@ -28,10 +28,9 @@ class SmartArtIcon {
   /**
    * 获取一个图标
    * @param {string} iconName
-   * @returns {Promise<array>}
+   * @returns {Promise<string>}
    */
   async fetchIcon(iconName: string) {
-    // social-photobucket--logos--24x24.svg
     const response = await fetch(`/icons/${iconName}.svg`);
 
     const svgText = await response.text();
@@ -40,6 +39,11 @@ class SmartArtIcon {
     const parser = new DOMParser();
     const svgDoc = parser.parseFromString(svgText, "image/svg+xml");
     const svgElement = svgDoc.documentElement;
+
+    // 识别异常
+    if (!svgElement || svgElement.tagName !== "svg") {
+      return;
+    }
 
     // 提取所有 path 标签中的 d 属性
     const paths = svgElement.querySelectorAll("path");
@@ -68,6 +72,10 @@ class SmartArtIcon {
    */
   drawIcon(icon: TextControlOption, name: string) {
     const iconStr = this.map[name];
+
+    if (!iconStr) {
+      return;
+    }
 
     const elWidth = icon.width;
     const elHeight = icon.height;
