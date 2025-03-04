@@ -1,5 +1,6 @@
 export interface ISmartArtOptionTextItem {
   text: string;
+  style?: object;
 }
 
 export interface ISmartArtOptionIconItem {

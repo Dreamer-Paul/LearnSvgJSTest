@@ -270,6 +270,7 @@ class SmartArtEditor {
     content,
     width,
     textAlign,
+    style,
   }: {
     x: number;
     y: number;
@@ -277,6 +278,7 @@ class SmartArtEditor {
     content: string;
     width: number;
     textAlign: "left" | "right" | "center";
+    style?: object;
   }) {
     const t = this.draw.text((add) => {
       const lines = this.text.wrapText(content, size, width);
@@ -296,9 +298,10 @@ class SmartArtEditor {
 
       add.font({
         size,
+        ...style,
       });
 
-      add.translate(x as number, y + size);
+      add.translate(x, y + size);
     });
 
     return t;
@@ -358,40 +361,70 @@ class SmartArtEditor {
 
       // 新版 keyName，根据 keyName 获取和存储节点设置
       const [_, align] = id.split("-", 2);
-      let keyName = id.substring(id.indexOf("-", id.indexOf("-") + 1) + 1);
+      const keyName = id.substring(id.indexOf("-", id.indexOf("-") + 1) + 1);
 
-      // console.log("keyName", keyName, id.split("-", 3));
+      const option = this.option.getText(keyName);
+      const text = option?.text || "New Element";
 
-      const content = this.option.getText(keyName)?.text || "New Element";
-
-      if (!content) {
+      if (!text) {
         return;
       }
 
       const elementWidth = element.width() as number;
 
-      const textAlign = (() => {
-        if (align.includes("l")) {
-          return "left";
-        } else if (align.includes("r")) {
-          return "right";
-        } else if (align.includes("c")) {
-          return "center";
-        }
+      const [textAlign, verticalAlign] = (() => {
+        const [_t, _v] = align;
 
-        return "left";
-      })() as TextControlOption["textAlign"];
+        const t = (() => {
+          if (_t === "l") {
+            return "left";
+          } else if (_t === "r") {
+            return "right";
+          } else if (_t === "c") {
+            return "center";
+          }
+
+          return "left";
+        })() as TextControlOption["textAlign"];
+
+        const v = (() => {
+          if (_v === "t") {
+            return "top";
+          } else if (_v === "b") {
+            return "bottom";
+          } else if (_v === "c") {
+            return "center";
+          }
+
+          return "center";
+        })() as TextControlOption["verticalAlign"];
+
+        return [t, v];
+      })();
 
       const { x, y, width, height } = getBoundingClientRect(el);
+
+      const getStyle = (keyName: string) => {
+        if (keyName.includes("title")) {
+          return { weight: "bold" };
+        }
+
+        if (keyName.includes("desc")) {
+          return { opacity: 0.6, size: 16 };
+        }
+
+        return;
+      };
 
       g.push(
         this.drawText({
           x,
           y,
-          size: 18,
+          size: keyName.includes("title") ? 24 : 18,
           textAlign,
-          content: content,
+          content: text,
           width: width || elementWidth,
+          style: option?.style || getStyle(keyName),
         })
       );
 
@@ -400,7 +433,7 @@ class SmartArtEditor {
         x,
         y,
         width: width || elementWidth,
-        height: height || el.height() as number,
+        height: height || (el.height() as number),
         index,
         textAlign,
       });

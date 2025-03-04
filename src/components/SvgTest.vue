@@ -32,6 +32,10 @@ onMounted(async () => {
     option: {
       "text-title": {
         text: "测试标题",
+        style: {
+          weight: "bold",
+          size: 28,
+        },
       },
       "text-1": {
         text: "图标的坐标有问题",
