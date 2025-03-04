@@ -5,13 +5,26 @@ import {
   Text,
   type Svg,
   G,
+  Element,
 } from "@svgdotjs/svg.js";
 import SmartArtIcon from "./icon";
 import SmartArtStyle from "./style";
 import SmartArtText from "./text";
 import SmartArtExport from "./export";
 import SmartArtOption, { type ISmartArtOptionItem } from "./option";
-import { getBoundingClientRect, getXY } from "./utils";
+import { getAlign, getBoundingClientRect, getTextPosition } from "./utils";
+
+export interface ItemOption {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface PatternItemOption extends ItemOption {
+  id: string;
+  path: string;
+}
 
 export interface ItemControlOption {
   x: number;
@@ -27,7 +40,15 @@ export interface TextControlOption {
   width: number;
   height: number;
   index: number;
-  textAlign: "left" | "right" | "center";
+  textAlign: "left" | "center" | "right";
+  verticalAlign?: "top" | "center" | "bottom";
+}
+
+export interface SkeletonStructures {
+  text: TextControlOption[];
+  icon: TextControlOption[];
+  pattern: PatternItemOption[];
+  control: ItemControlOption[];
 }
 
 interface SmartArtEditorBaseProps {
@@ -60,11 +81,20 @@ class SmartArtEditor {
   // 文字
   private textEl: SvgJSElement[] = [];
 
+  // 骨架图结构属性
+  private skeletonStructures: SkeletonStructures = {
+    text: [],
+    icon: [],
+    pattern: [],
+    control: [],
+  };
+
   // 外部管理，操作控制符
   private itemControlOptions: ItemControlOption[] = [];
   private textPlaceholdersOptions: TextControlOption[] = [];
   private iconPlaceholdersOptions: TextControlOption[] = [];
 
+  private textGroupsEl: SvgJSElement[] = [];
   // 图标
   private iconGroupsEl: SvgJSElement[] = [];
 
@@ -125,107 +155,110 @@ class SmartArtEditor {
   }
 
   /**
-   * 根据当前模板重新绘制图形到画板
+   * 获取到骨架图之后，提取里面的结构，重新绘制
    */
-  async drawContext() {
-    const [str, width, height] = await this.getTemplate(this.template);
-
-    // 目前这个数据里面一共有什么图（包括重复的）
-    const a = this.option.getAllIconName();
-
-    // Todo: 临时操作，写的比较粗糙
-    const icons = await this.icon.fetchIcons(a);
-
-    // Todo: 图标素材入库，下次最好不再请求图片资源
-    a.forEach((i, index) => {
-      icons[index] && this.icon.addToMap(i, icons[index]);
-    });
-
-    this.draw.clear();
-
-    // 背景在最底层
-    this.bgEl = this.draw.rect(width, height);
-
-    // 图形内容
-    this.draw.svg(str as string);
-    this.draw.size(width, height);
-
-    this.style.setBackgroundStyle(this.bgEl, this._style);
-
-    // 设置渐变填充
-    const gradient = this.draw.gradient("linear", (add) => {
-      add.stop(0, "#ff0000");
-      add.stop(1, "#0000ff");
-    });
+  async prepareTemplate() {
+    // 重置
+    this.skeletonStructures.text = [];
+    this.skeletonStructures.icon = [];
+    this.skeletonStructures.pattern = [];
+    this.skeletonStructures.control = [];
 
     this.prepareText();
     this.prepareIcon();
-
-    // 新模板的 Options 包含什么 Keys，做补全和删除
-    const optionKeys = [
-      ...this.textPlaceholdersOptions.map((item) => `text-${item.id}`),
-      ...this.iconPlaceholdersOptions.map((item) => `icon-${item.id}`),
-    ];
-
-    const nextOption: Record<string, ISmartArtOptionItem> = {};
-
-    optionKeys.forEach((key) => {
-      const item = this.option.getItem(key);
-
-      if (item) {
-        nextOption[key] = item;
-      } else if (key.startsWith("text")) {
-        nextOption[key] = { text: "New Element" };
-      } else if (key.startsWith("icon")) {
-        nextOption[key] = { name: "bug-line" };
-      }
-    });
-
-    this.option.setData(nextOption);
-
-    // 画图标
-    this.iconGroupsEl = this.iconPlaceholdersOptions.map((item) => {
-      const option = this.option.getIcon(item.id);
-
-      if (option) {
-        return this.icon.drawIcon(item, option.name);
-      }
-    }) as G[];
-
-    this.styleIcon();
-    this.styleRect();
-
-    this.createItemControl();
+    this.preparePattern();
+    this.prepareControl();
   }
 
-  styleIcon() {
-    const styleItem = this.style.getStyleItem(this._style);
+  async prepareText() {
+    // 获取文本框区域
+    this.textPlaceholdersOptions = [];
 
-    if (!styleItem || !styleItem.icon) {
-      return;
-    }
+    this.draw.find("[id^='tx-']").each((el, index) => {
+      const element = el as Path;
+      const id = element.id();
 
-    this.iconGroupsEl.forEach((group, index) => {
-      group && this.style.setIconStyle(group, styleItem, index);
+      // 新版 keyName，根据 keyName 获取和存储节点设置
+      const align = id.split("-", 2)[1];
+      const keyName = id.substring(id.indexOf("-", id.indexOf("-") + 1) + 1);
+
+      const [textAlign, verticalAlign] = getAlign(align);
+      const { x, y } = getTextPosition(el);
+      const { width, height } = getBoundingClientRect(el);
+
+      const textItem = {
+        id: keyName,
+        x,
+        y,
+        width: width || (el.width() as number),
+        height: height || (el.height() as number),
+        index,
+        textAlign,
+        verticalAlign,
+      };
+
+      this.skeletonStructures.text.push({ ...textItem });
+      // 这里复制一份的原因是，实际文本的位置可能发生改变，需要基于原骨架图的坐标做对齐
+      this.textPlaceholdersOptions.push({ ...textItem });
     });
   }
 
-  styleRect() {
-    const styleItem = this.style.getStyleItem(this._style);
+  async prepareIcon() {
+    this.iconPlaceholdersOptions = [];
 
-    if (!styleItem || !styleItem.rect) {
-      return;
-    }
+    this.draw.find("[id^='ic-']").each((el, index) => {
+      const id = el.id();
 
-    this.draw.find("#lines path").each((item, index) => {
-      this.style.setRectStyle(item, styleItem, index);
+      // 新版 keyName，根据 keyName 获取和存储节点设置
+      const keyName = id.substring(id.indexOf("-", id.indexOf("-") + 1) + 1);
+
+      const { x, y } = getTextPosition(el);
+
+      const iconItem = {
+        id: keyName,
+        x,
+        y,
+        width: el.width() as number,
+        height: el.height() as number,
+        index,
+        textAlign: "center" as TextControlOption["textAlign"],
+      };
+
+      this.skeletonStructures.icon.push({ ...iconItem });
+      this.iconPlaceholdersOptions.push({ ...iconItem });
+    });
+  }
+
+  async preparePattern() {
+    this.draw.find("#lines [id^='g-']").each((el, index) => {
+      const id = el.id();
+      const keyName = id.split("-", 2)[1];
+
+      const pathEl = el.findOne("path") as Element | null;
+
+      if (!pathEl) {
+        return;
+      }
+
+      console.log("preparePatternS", keyName);
+
+      const { x, y } = getBoundingClientRect(pathEl);
+
+      this.skeletonStructures.pattern.push({
+        id: keyName,
+        x,
+        y,
+        width: pathEl.width() as number,
+        height: pathEl.height() as number,
+        path: pathEl.attr("d"),
+      });
     });
   }
 
   /**
    * 向画布外添加增删管理按钮
    */
-  createItemControl() {
+  prepareControl() {
     // 重置
     this.itemControlOptions = [];
 
@@ -260,6 +293,144 @@ class SmartArtEditor {
     });
 
     this.onUpdateAddButtons?.(this.itemControlOptions);
+  }
+
+  /**
+   * 补全选项设置
+   */
+  async fillOptions() {
+    // 新模板的 Options 包含什么 Keys，做补全和删除
+    const optionKeys = [
+      ...this.textPlaceholdersOptions.map((item) => `text-${item.id}`),
+      ...this.iconPlaceholdersOptions.map((item) => `icon-${item.id}`),
+    ];
+
+    const nextOption: Record<string, ISmartArtOptionItem> = {};
+
+    optionKeys.forEach((key) => {
+      const item = this.option.getItem(key);
+
+      if (item) {
+        nextOption[key] = item;
+      } else if (key.startsWith("text")) {
+        nextOption[key] = { text: "New Element" };
+      } else if (key.startsWith("icon")) {
+        nextOption[key] = { name: "bug-line" };
+      }
+    });
+
+    this.option.setData(nextOption);
+  }
+
+  /**
+   * 根据当前模板重新绘制图形到画板
+   */
+  async drawContext() {
+    const [str, width, height] = await this.getTemplate(this.template);
+
+    // 目前这个数据里面一共有什么图（包括重复的）
+    const a = this.option.getAllIconName();
+
+    // Todo: 临时操作，写的比较粗糙
+    const icons = await this.icon.fetchIcons(a);
+
+    // Todo: 图标素材入库，下次最好不再请求图片资源
+    a.forEach((i, index) => {
+      icons[index] && this.icon.addToMap(i, icons[index]);
+    });
+
+    this.draw.clear();
+
+    // 图形内容
+    this.draw.svg(str as string);
+    this.draw.size(width, height);
+
+    // 第一步，获取骨架图结构数据
+    this.prepareTemplate();
+    // 第二步，根据骨架图结构数据，补全选项设置
+    this.fillOptions();
+    // 第三步，清空画板，开始绘制
+    this.draw.clear();
+    // 第四步，绘制骨架图
+    this.bgEl = this.draw.rect(width, height);
+    this.style.setBackgroundStyle(this.bgEl, this._style);
+
+    // 画元素
+    this.skeletonStructures.pattern.forEach((item, index) => {
+      const g = this.draw.group();
+      g.id(`g-${item.id}`);
+
+      if (item.x && item.y) {
+        g.translate(item.x, item.y);
+      }
+
+      const path = g.path(item.path);
+      const styleItem = this.style.getStyleItem(this._style);
+
+      if (styleItem?.rect) {
+        this.style.setRectStyle(path, styleItem, index);
+      }
+
+      return g;
+    });
+
+    // 画文字
+    this.textEl = this.textPlaceholdersOptions.map((item) => {
+      const { x, y, id, textAlign, width } = item;
+
+      const option = this.option.getText(id);
+
+      if (!option) {
+        return;
+      }
+
+      const getStyle = (keyName: string) => {
+        if (keyName.includes("title")) {
+          return { weight: "bold" };
+        }
+
+        if (keyName.includes("desc")) {
+          return { opacity: 0.6, size: 16 };
+        }
+
+        return;
+      };
+
+      return this.drawText({
+        x,
+        y,
+        size: id.includes("title") ? 24 : 18,
+        textAlign,
+        content: option.text,
+        width,
+        style: option.style || getStyle(id),
+      });
+    }) as SvgJSElement[];
+
+    this.onUpdateControlTexts?.(this.textPlaceholdersOptions);
+
+    // 画图标
+    this.iconGroupsEl = this.iconPlaceholdersOptions.map((item) => {
+      const option = this.option.getIcon(item.id);
+
+      if (option) {
+        return this.icon.drawIcon(item, option.name);
+      }
+    }) as G[];
+
+    this.styleIcon();
+  }
+
+  styleIcon() {
+    const styleItem = this.style.getStyleItem(this._style);
+
+    if (!styleItem || !styleItem.icon) {
+      return;
+    }
+
+    this.iconGroupsEl.forEach((group, index) => {
+      group && this.style.setIconStyle(group, styleItem, index);
+    });
   }
 
   // 绘制文字
@@ -345,144 +516,6 @@ class SmartArtEditor {
   }
 
   /**
-   * 存储原骨架图的可编辑文本框信息
-   */
-  prepareText() {
-    // 重置
-    this.textPlaceholdersOptions = [];
-
-    const elements = this.draw.find("[id^='tx-']");
-
-    const g: Text[] = [];
-
-    elements.each((el, index) => {
-      const element = el as Path;
-      const id = element.id();
-
-      // 新版 keyName，根据 keyName 获取和存储节点设置
-      const [_, align] = id.split("-", 2);
-      const keyName = id.substring(id.indexOf("-", id.indexOf("-") + 1) + 1);
-
-      const option = this.option.getText(keyName);
-      const text = option?.text || "New Element";
-
-      if (!text) {
-        return;
-      }
-
-      const elementWidth = element.width() as number;
-
-      const [textAlign, verticalAlign] = (() => {
-        const [_t, _v] = align;
-
-        const t = (() => {
-          if (_t === "l") {
-            return "left";
-          } else if (_t === "r") {
-            return "right";
-          } else if (_t === "c") {
-            return "center";
-          }
-
-          return "left";
-        })() as TextControlOption["textAlign"];
-
-        const v = (() => {
-          if (_v === "t") {
-            return "top";
-          } else if (_v === "b") {
-            return "bottom";
-          } else if (_v === "c") {
-            return "center";
-          }
-
-          return "center";
-        })() as TextControlOption["verticalAlign"];
-
-        return [t, v];
-      })();
-
-      const { x, y, width, height } = getBoundingClientRect(el);
-
-      const getStyle = (keyName: string) => {
-        if (keyName.includes("title")) {
-          return { weight: "bold" };
-        }
-
-        if (keyName.includes("desc")) {
-          return { opacity: 0.6, size: 16 };
-        }
-
-        return;
-      };
-
-      g.push(
-        this.drawText({
-          x,
-          y,
-          size: keyName.includes("title") ? 24 : 18,
-          textAlign,
-          content: text,
-          width: width || elementWidth,
-          style: option?.style || getStyle(keyName),
-        })
-      );
-
-      this.textPlaceholdersOptions.push({
-        id: keyName,
-        x,
-        y,
-        width: width || elementWidth,
-        height: height || (el.height() as number),
-        index,
-        textAlign,
-      });
-
-      el.remove();
-    });
-
-    this.textEl = g;
-    this.onUpdateControlTexts?.(this.textPlaceholdersOptions);
-
-    return g;
-  }
-
-  /**
-   * 存储原骨架图的图标信息
-   */
-  prepareIcon() {
-    this.iconPlaceholdersOptions = [];
-
-    const elements = this.draw.find("[id^='ic-']");
-
-    const groups: G[] = [];
-
-    elements.each((el, index) => {
-      const id = el.id();
-
-      // 新版 keyName，根据 keyName 获取和存储节点设置
-      const [_, align] = id.split("-", 2);
-      let keyName = id.substring(id.indexOf("-", id.indexOf("-") + 1) + 1);
-
-      const { x, y } = getBoundingClientRect(el);
-
-      this.iconPlaceholdersOptions.push({
-        id: keyName,
-        x,
-        y,
-        width: el.width() as number,
-        height: el.height() as number,
-        index,
-        textAlign: "center",
-      });
-
-      el.remove();
-    });
-
-    return groups;
-  }
-
-  /**
    * 传入新的选项，重新绘制
    */
   execDraw(props: SmartArtEditorBaseProps) {
@@ -505,7 +538,6 @@ class SmartArtEditor {
 
     this.bgEl && this.style.setBackgroundStyle(this.bgEl, this._style);
     this.styleIcon();
-    this.styleRect();
   }
 
   /**

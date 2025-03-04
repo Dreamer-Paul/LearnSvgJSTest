@@ -77,20 +77,35 @@ class SmartArtIcon {
       return;
     }
 
-    const elWidth = icon.width;
-    const elHeight = icon.height;
+    const elWidth = icon.width - 4;
+    const elHeight = icon.height - 4;
+
+    console.log("1", name, elWidth, elHeight);
 
     const g = this.draw.group();
     const iconElement = g.svg(iconStr).first();
 
-    // 等比缩放图标到 48 的宽度
-    const scale = elWidth / (iconElement.width() as number);
-    iconElement.size(elWidth, (iconElement.height() as number) * scale);
+    // 获取图标的原始宽度和高度
+    const originalWidth = iconElement.width() as number;
+    const originalHeight = iconElement.height() as number;
+
+    // 计算宽度和高度的缩放比例
+    const widthScale = elWidth / originalWidth;
+    const heightScale = elHeight / originalHeight;
+
+    // 选择较小的缩放比例以保持图标的宽高比
+    const scale = Math.min(widthScale, heightScale);
+
+    // 按比例缩放图标
+    iconElement.size(originalWidth * scale, originalHeight * scale);
+
+    console.log("2 iconElement", iconElement.width(), iconElement.height());
 
     // 居中对齐
+    const offsetX = (elWidth - (iconElement.width() as number)) / 2;
     const offsetY = (elHeight - (iconElement.height() as number)) / 2;
 
-    g.translate(icon.x, icon.y + offsetY);
+    g.translate(icon.x + offsetX, icon.y + offsetY);
 
     return g;
   }

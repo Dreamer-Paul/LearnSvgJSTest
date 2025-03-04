@@ -182,10 +182,13 @@ const onClickTestRedraw = () => {
     option: {
       "text-title": { text: "流萤角色档案" },
       "text-1": { text: "基因改造战士" },
+      "icon-1": { name: "flask-line" },
       "text-1-desc": { text: "代号AR-26710的格拉默铁骑" },
       "text-2": { text: "星际难民" },
+      "icon-2": { name: "article-line" },
       "text-2-desc": { text: "携带失熵症的流浪者" },
       "text-3": { text: "星核猎手" },
+      "icon-3": { name: "article-line" },
       "text-3-desc": { text: "化名萨姆的寻道者" },
     },
   });

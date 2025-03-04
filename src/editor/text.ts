@@ -33,18 +33,11 @@ class SmartArtText {
       const words = paragraph.split("");
       let currentLine = "";
       let currentLineWidth = 0;
-      let firstWordWidth = 0;
 
-      words.forEach((word, index) => {
+      words.forEach((word) => {
         tempText.text(currentLine + word);
 
-        if (index === 0) {
-          firstWordWidth = tempText.length();
-        }
-
-        console.log("tempText", tempText, tempText.length(), width);
-
-        if (width - tempText.length() < firstWordWidth) {
+        if (tempText.length() >= width) {
           lines.push({
             text: currentLine,
             width: currentLineWidth,

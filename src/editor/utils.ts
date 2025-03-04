@@ -1,11 +1,16 @@
-import type { Dom, Element } from "@svgdotjs/svg.js";
+import type { Dom, Element, Rect } from "@svgdotjs/svg.js";
+import type { TextControlOption } from ".";
 
-const getParentPosition = (element: Dom | undefined | null): { x: number; y: number } => {
+const getParentPosition = (
+  element: Dom | undefined | null
+): { x: number; y: number } => {
   if (!element) return { x: 0, y: 0 };
 
   const parentPos = element.attr("data-position") as string | null;
   if (parentPos) {
-    const [px, py] = parentPos.split(";").map((item) => parseInt(item.split(":")[1]));
+    const [px, py] = parentPos
+      .split(";")
+      .map((item) => parseInt(item.split(":")[1]));
     const parentElement = element.parent();
     const parentPosition = getParentPosition(parentElement);
 
@@ -22,53 +27,43 @@ const getParentPosition = (element: Dom | undefined | null): { x: number; y: num
 };
 
 // 采用两种方式获取坐标
-export const getXY = (el: Element) => {
-  // 竞品的私有属性
+export const getTextPosition = (el: Element) => {
   const position = el.attr("data-position") as string;
-
-  if (position) {
-    const [x, y, width, height] = position.split(";").map((item) => parseInt(item.split(":")[1]));
-    const parentPosition = getParentPosition(el.parent());
-
-    console.log("getXY", el.id(), width, height);
-
-    return { x: x + parentPosition.x, y: y + parentPosition.y, width, height };
-  }
-
-  const matrix = el.matrix();
-
-  return {
-    x: el.x() as number || matrix.e,
-    // 如果元素旋转了 180 度，还需要 - el.height()
-    y: el.y() as number || matrix.f,
-  };
-};
-
-// 获取元素相对于画布的标准位置
-export const getBoundingClientRect = (el: Element): { x: number; y: number; width: number; height: number } => {
-  const position = el.attr("data-position") as string;
+  const transform = el.attr("transform") as string;
 
   const rect = el.node.getBoundingClientRect();
   const svg = el.root().node as SVGSVGElement;
   const svgRect = svg.getBoundingClientRect();
 
   if (position) {
-    const [x, y, width, height] = position.split(";").map((item) => parseInt(item.split(":")[1]));
-    // const parentPosition = getParentPosition(el.parent());
-
-    // console.log("getXY", el.id(), width, height);
-
-    // return { x: x + parentPosition.x, y: y + parentPosition.y, width, height };
+    const [x, y, width, height] = position
+      .split(";")
+      .map((item) => parseInt(item.split(":")[1]));
 
     return {
       x: rect.left - svgRect.left,
       y: rect.top - svgRect.top,
       width,
       height,
-    }
+    };
+  }
+  console.log("x", el.x(), "y", el.y(), "rect", rect);
+
+  if (transform) {
+    const matrix = el.matrix();
+    const x = matrix.e;
+    const y = matrix.f;
+    // console.log("transform", transform, el.id(), matrix);
+
+    return {
+      x,
+      y,
+      width: rect.width,
+      height: rect.height,
+    };
   }
 
-
+  console.log("fuck", el.id());
 
   return {
     x: rect.left - svgRect.left,
@@ -76,4 +71,78 @@ export const getBoundingClientRect = (el: Element): { x: number; y: number; widt
     width: rect.width,
     height: rect.height,
   };
+};
+
+// 获取元素相对于画布的标准位置
+export const getBoundingClientRect = (
+  el: Element
+): { x: number; y: number; width: number; height: number } => {
+  const position = el.attr("data-position") as string;
+  const transform = el.attr("transform") as string;
+
+  const rect = el.node.getBoundingClientRect();
+  const svg = el.root().node as SVGSVGElement;
+  const svgRect = svg.getBoundingClientRect();
+
+  if (position) {
+    const [x, y, width, height] = position
+      .split(";")
+      .map((item) => parseInt(item.split(":")[1]));
+
+    return {
+      x: rect.left - svgRect.left,
+      y: rect.top - svgRect.top,
+      width,
+      height,
+    };
+  }
+  console.log("x", el.x(), "y", el.y(), "rect", rect);
+
+  if (transform) {
+    const matrix = el.matrix();
+    const x = matrix.e;
+    const y = matrix.f;
+    // console.log("transform", transform, el.id(), matrix);
+
+    return {
+      x,
+      y,
+      width: rect.width,
+      height: rect.height,
+    };
+  }
+
+  console.log("fuck", el.id());
+
+  return {
+    x: 0,
+    y: 0,
+    // x: rect.left - svgRect.left,
+    // y: rect.top - svgRect.top,
+    // x: el.x(),
+    // y: el.y(),
+    width: rect.width,
+    height: rect.height,
+  };
+};
+
+export const getAlign = (alignStr: string): [TextControlOption["textAlign"], TextControlOption["verticalAlign"]] => {
+  const horizontalAlignMap: Record<string, TextControlOption["textAlign"]> = {
+    l: "left",
+    r: "right",
+    c: "center",
+  };
+
+  const verticalAlignMap: Record<string, TextControlOption["verticalAlign"]> = {
+    t: "top",
+    b: "bottom",
+    c: "center",
+  };
+
+  const [hAlign, vAlign] = alignStr.split("");
+
+  const textAlign = horizontalAlignMap[hAlign] || "left";
+  const verticalAlign = verticalAlignMap[vAlign] || "center";
+
+  return [textAlign, verticalAlign];
 };
