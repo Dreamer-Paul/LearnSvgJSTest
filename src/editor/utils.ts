@@ -1,75 +1,63 @@
-import type { Dom, Element, Rect } from "@svgdotjs/svg.js";
+import type { Element } from "@svgdotjs/svg.js";
 import type { TextControlOption } from ".";
-
-const getParentPosition = (
-  element: Dom | undefined | null
-): { x: number; y: number } => {
-  if (!element) return { x: 0, y: 0 };
-
-  const parentPos = element.attr("data-position") as string | null;
-  if (parentPos) {
-    const [px, py] = parentPos
-      .split(";")
-      .map((item) => parseInt(item.split(":")[1]));
-    const parentElement = element.parent();
-    const parentPosition = getParentPosition(parentElement);
-
-    // 顶层，无视掉
-    if (parentElement?.id().includes("family")) {
-      return { x: px, y: py };
-    }
-
-    return { x: px + parentPosition.x, y: py + parentPosition.y };
-    // return { x: px, y: py };
-  }
-
-  return { x: 0, y: 0 };
-};
 
 // 采用两种方式获取坐标
 export const getTextPosition = (el: Element) => {
-  const position = el.attr("data-position") as string;
-  const transform = el.attr("transform") as string;
+  const bbox = el.bbox();
+  const ctm = el.ctm();
 
-  const rect = el.node.getBoundingClientRect();
-  const svg = el.root().node as SVGSVGElement;
-  const svgRect = svg.getBoundingClientRect();
+  // 有一层包裹
+  if (el.node.tagName === "g") {
+    const childPath = el.findOne("path") as Element | null;
 
-  if (position) {
-    const [x, y, width, height] = position
-      .split(";")
-      .map((item) => parseInt(item.split(":")[1]));
+    // 直接用子的
+    if (childPath) {
+      const childCtm = childPath.ctm();
 
+      // 这里有没有可能用 bbox 呢，暂时不清楚哦
+      return {
+        x: childCtm.e,
+        y: childCtm.f,
+        width: bbox.width,
+        height: bbox.height,
+      };
+    }
+
+    // 回退到父
     return {
-      x: rect.left - svgRect.left,
-      y: rect.top - svgRect.top,
-      width,
-      height,
-    };
-  }
-  console.log("x", el.x(), "y", el.y(), "rect", rect);
-
-  if (transform) {
-    const matrix = el.matrix();
-    const x = matrix.e;
-    const y = matrix.f;
-    // console.log("transform", transform, el.id(), matrix);
-
-    return {
-      x,
-      y,
-      width: rect.width,
-      height: rect.height,
-    };
+      x: bbox.x,
+      y: bbox.y,
+      width: bbox.width,
+      height: bbox.height,
+    }
   }
 
-  console.log("fuck", el.id());
+  // 没有包裹
+  if (el.node.tagName === "path") {
+    // 有变换，直接用 ctm
+    if (el.attr("transform")) {
+      return {
+        x: ctm.e,
+        y: ctm.f,
+        width: bbox.width,
+        height: bbox.height,
+      }
+    }
 
+    return {
+      x: bbox.x,
+      y: bbox.y,
+      width: bbox.width,
+      height: bbox.height,
+    }
+  }
+
+  // 待定，异常情况
   return {
-    x: rect.left - svgRect.left,
-    y: rect.top - svgRect.top,
-    width: rect.width,
-    height: rect.height,
+    x: 200,
+    y: 200,
+    width: bbox.width,
+    height: bbox.height,
   };
 };
 
