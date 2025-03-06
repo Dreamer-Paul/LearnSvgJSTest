@@ -8,6 +8,8 @@ import { styleNames } from "../editor/style";
 import { Plus, Trash } from "lucide-vue-next";
 import useEvaluation from "../hooks/use-evaluation";
 import useSummary from "../hooks/use-summary";
+import { getTemplate, type TemplateCategory } from "../editor/template";
+import fakeData from "../editor/constants/fake-data";
 
 const inputText =
   ref(`流萤是米哈游开发的电子游戏《崩坏：星穹铁道》中的虚构角色，属于游戏中的组织“星核猎手”。她的真实身份是基因改造人AR-26710，曾是格拉默共和国的作战兵器“格拉默铁骑”的一员。流萤的角色设定和故事情节深受玩家和评论员的喜爱，尤其是在情感表达和人物成长方面。
@@ -35,6 +37,9 @@ onMounted(async () => {
         style: {
           weight: "bold",
           size: 28,
+          fill: "red",
+          stroke: "gray",
+          strokeWidth: 3,
         },
       },
       "text-1": {
@@ -176,22 +181,18 @@ const onClickUseTemplate = (cateIndex: number, index: number) => {
 };
 
 const onClickTestRedraw = () => {
-  drawInst?.execDraw({
-    template: "converge-pins-v6--family",
-    count: 3,
-    option: {
-      "text-title": { text: "流萤角色档案" },
-      "text-1": { text: "基因改造战士" },
-      "icon-1": { name: "flask-line" },
-      "text-1-desc": { text: "代号AR-26710的格拉默铁骑" },
-      "text-2": { text: "星际难民" },
-      "icon-2": { name: "article-line" },
-      "text-2-desc": { text: "携带失熵症的流浪者" },
-      "text-3": { text: "星核猎手" },
-      "icon-3": { name: "article-line" },
-      "text-3-desc": { text: "化名萨姆的寻道者" },
-    },
+  const types = fakeData.scores as TemplateCategory[];
+  evaluationResult.value = types;
+
+  summaryTemplates.value = types.map((type, index) => {
+    const template = getTemplate(type, fakeData.results[index].count);
+
+    console.log("fake 数据匹配 template", type, template);
+
+    return template || [];
   });
+
+  summaryResults.value = fakeData.results.map((result) => result);
 };
 </script>
 
