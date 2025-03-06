@@ -397,7 +397,7 @@ class SmartArtEditor {
     );
 
     // 画文字
-    this.textEl = this.textPlaceholdersOptions.map((item) => {
+    this.textEl = this.skeletonStructures.text.map((item) => {
       const { x, y, id, textAlign, verticalAlign, width, height, style } = item;
 
       const option = this.option.getText(id);
@@ -443,7 +443,7 @@ class SmartArtEditor {
     // 画图标
     const styleItem = this.style.getStyleItem(this._style);
 
-    this.iconGroupsEl = this.iconPlaceholdersOptions.map((item, index) => {
+    this.iconGroupsEl = this.skeletonStructures.icon.map((item, index) => {
       const option = this.option.getIcon(item.id);
 
       if (option) {
@@ -467,20 +467,6 @@ class SmartArtEditor {
         return g;
       }
     }) as G[];
-  }
-
-  styleIcon() {
-    const styleItem = this.style.getStyleItem(this._style);
-
-    if (!styleItem || !styleItem.icon) {
-      return;
-    }
-
-    this.iconGroupsEl.forEach((group, index) => {
-      // const option = this.option.getIcon(item.id);
-
-      group && this.style.applyStyle(group, styleItem.icon, index);
-    });
   }
 
   // 绘制文字
@@ -573,13 +559,42 @@ class SmartArtEditor {
     this._style = styleName;
 
     this.bgEl && this.style.setBackgroundStyle(this.bgEl, this._style);
-    this.styleIcon();
 
+    const styleItem = this.style.getStyleItem(this._style);
+
+    // Todo: 装饰性元素暂时没有 Options 自定义样式
     this.patternGroupsEl.forEach((item, index) => {
-      const styleItem = this.style.getStyleItem(this._style);
-
       if (styleItem?.rect) {
         this.style.applyStyle(item, styleItem.rect, index);
+      }
+    });
+
+    // 修改文字样式
+    // Todo
+
+    // 修改图标样式
+    this.skeletonStructures.icon.forEach((item, index) => {
+      const option = this.option.getIcon(item.id);
+
+      if (option) {
+        const g = this.iconGroupsEl[index];
+
+        let aa;
+        if (typeof styleItem?.icon === "function") {
+          aa = styleItem.icon(index);
+        } else {
+          aa = styleItem?.icon;
+        }
+
+        if (g) {
+          this.style.applyStyle(
+            g,
+            this.style.mixStyle(aa, option.style),
+            index
+          );
+        }
+
+        return g;
       }
     });
   }
