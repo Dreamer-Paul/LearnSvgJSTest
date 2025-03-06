@@ -255,6 +255,7 @@ const onClickTestRedraw = () => {
         v-if="controlTextTextarea"
         :style="{
           position: 'absolute',
+          fontSize: controlTextTextarea?.style?.size + 'px',
           width: controlTextTextarea?.width + 'px',
           height: controlTextTextarea?.height + 'px',
           left: controlTextTextarea?.x + 'px',
@@ -336,6 +337,6 @@ const onClickTestRedraw = () => {
 
 .text-controls span:hover {
   border: 2px solid #2292ff;
-  border-radius: 1em;
+  border-radius: .5em;
 }
 </style>

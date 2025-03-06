@@ -101,7 +101,7 @@ button:focus-visible {
   overflow-wrap: break-word;
   margin: 0;
   padding: 0;
-  font-size: 18px;
+  font: inherit;
   vertical-align: top;
   resize: vertical;
   overflow: hidden;

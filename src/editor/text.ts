@@ -18,15 +18,20 @@ class SmartArtText {
     this.draw = draw;
   }
 
-  wrapText(text: string, size: number, width: number) {
+  wrapText(
+    text: string,
+    width: number,
+    style?: { size?: number; [key: string]: any }
+  ) {
     const draw = this.draw;
     const lines: { text: string; width: number; height: number }[] = [];
     const paragraphs = text.split("\n");
+    const size = style?.size || 18;
 
     // 创建临时文本元素来测量宽度
     const tempText = draw.text("").font({
-      // family: 'Arial',
       size,
+      ...style,
     });
 
     paragraphs.forEach((paragraph) => {

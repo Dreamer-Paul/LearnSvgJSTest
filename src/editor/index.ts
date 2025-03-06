@@ -40,6 +40,7 @@ export interface TextControlOption {
   width: number;
   height: number;
   index: number;
+  style?: object;
   textAlign: "left" | "center" | "right";
   verticalAlign?: "top" | "center" | "bottom";
 }
@@ -174,6 +175,18 @@ class SmartArtEditor {
     // 获取文本框区域
     this.textPlaceholdersOptions = [];
 
+    const getFontStyle = (keyName: string) => {
+      if (keyName.includes("title")) {
+        return { weight: "bold", size: 28 };
+      }
+
+      if (keyName.includes("desc")) {
+        return { opacity: 0.6, size: 16 };
+      }
+
+      return { size: 20 };
+    };
+
     this.draw.find("[id^='tx-']").each((el, index) => {
       const element = el as Path;
       const id = element.id();
@@ -192,6 +205,7 @@ class SmartArtEditor {
         width: width || (el.width() as number),
         height: height || (el.height() as number),
         index,
+        style: getFontStyle(keyName),
         textAlign,
         verticalAlign,
       };
@@ -375,7 +389,7 @@ class SmartArtEditor {
 
     // 画文字
     this.textEl = this.textPlaceholdersOptions.map((item) => {
-      const { x, y, id, textAlign, width } = item;
+      const { x, y, id, textAlign, verticalAlign, width, height, style } = item;
 
       const option = this.option.getText(id);
 
@@ -383,27 +397,36 @@ class SmartArtEditor {
         return;
       }
 
-      const getStyle = (keyName: string) => {
-        if (keyName.includes("title")) {
-          return { weight: "bold" };
-        }
-
-        if (keyName.includes("desc")) {
-          return { opacity: 0.6, size: 16 };
-        }
-
-        return;
-      };
-
-      return this.drawText({
-        x,
-        y,
-        size: id.includes("title") ? 24 : 18,
+      const text = this.drawText({
         textAlign,
-        content: option.text,
+        text: option.text,
         width,
-        style: option.style || getStyle(id),
+        style: {
+          // 默认初始化的样式
+          ...style,
+          // 选项的样式，优先级更高
+          ...option.style,
+        },
       });
+
+      const textBbox = text.bbox();
+
+      const centerX = x + (width - textBbox.width) / 2;
+
+      // 弥补基线需要的高度
+      const offsetY = style?.size || 0;
+      // 靠顶部对齐
+      let bottomY = y + offsetY;
+
+      if (verticalAlign === "center") {
+        bottomY = y + (height - textBbox.height) / 2 + offsetY;
+      } else if (verticalAlign === "bottom") {
+        bottomY = y + height - textBbox.height + offsetY;
+      }
+
+      text.translate(x, bottomY);
+
+      return text;
     }) as SvgJSElement[];
 
     this.onUpdateControlTexts?.(this.textPlaceholdersOptions);
@@ -434,24 +457,19 @@ class SmartArtEditor {
 
   // 绘制文字
   drawText({
-    x,
-    y,
-    size = 20,
-    content,
+    text,
     width,
     textAlign,
     style,
   }: {
-    x: number;
-    y: number;
-    size: number;
-    content: string;
+    text: string;
     width: number;
     textAlign: "left" | "right" | "center";
-    style?: object;
+    style: object;
+    node?: Text;
   }) {
     const t = this.draw.text((add) => {
-      const lines = this.text.wrapText(content, size, width);
+      const lines = this.text.wrapText(text, width, style);
 
       lines.forEach((line) => {
         const tspan = add.tspan(line.text).newLine();
@@ -466,32 +484,27 @@ class SmartArtEditor {
         }
       });
 
-      add.font({
-        size,
-        ...style,
-      });
-
-      add.translate(x, y + size);
+      add.font(style);
     });
 
     return t;
   }
 
-  renderTextUpdate({
-    size = 20,
+  updateDrawText({
     text,
     width,
     textAlign,
-    textNode,
+    style,
+    node,
   }: {
-    size: number;
     text: string;
     width: number;
     textAlign: "left" | "right" | "center";
-    textNode: Text;
+    style?: object;
+    node: Text;
   }) {
-    const t = textNode.text((add) => {
-      const lines = this.text.wrapText(text, size, width);
+    const t = node.text((add) => {
+      const lines = this.text.wrapText(text, width, style);
 
       lines.forEach((line) => {
         const tspan = add.tspan(line.text).newLine();
@@ -504,10 +517,6 @@ class SmartArtEditor {
         } else {
           tspan.dx((width - line.width) / 2); // 居中对齐
         }
-      });
-
-      add.font({
-        size,
       });
     });
 
@@ -555,14 +564,22 @@ class SmartArtEditor {
   updateText(data: TextControlOption & { text: string }) {
     console.log("updateTextNew", data);
 
-    const textNode = this.textEl[data.index] as Text;
+    const node = this.textEl[data.index] as Text;
+    const option = this.option.getText(data.id);
 
-    this.renderTextUpdate({
+    if (!node || !option) {
+      return;
+    }
+
+    this.updateDrawText({
       text: data.text,
-      size: 18,
       width: data.width,
+      style: {
+        ...data.style,
+        ...option.style,
+      },
       textAlign: data.textAlign,
-      textNode,
+      node,
     });
 
     this.option.setItem(`text-${data.id}`, { text: data.text });
