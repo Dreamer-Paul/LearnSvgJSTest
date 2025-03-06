@@ -80,9 +80,10 @@ class SmartArtIcon {
     const elWidth = icon.width - 4;
     const elHeight = icon.height - 4;
 
-    console.log("1", name, elWidth, elHeight);
+    // console.log("1", name, elWidth, elHeight);
 
     const g = this.draw.group();
+    g.id(`icon-${name}`);
     const iconElement = g.svg(iconStr).first();
 
     // 获取图标的原始宽度和高度
@@ -99,7 +100,7 @@ class SmartArtIcon {
     // 按比例缩放图标
     iconElement.size(originalWidth * scale, originalHeight * scale);
 
-    console.log("2 iconElement", iconElement.width(), iconElement.height());
+    // console.log("2 iconElement", iconElement.width(), iconElement.height());
 
     // 居中对齐
     const offsetX = (elWidth - (iconElement.width() as number)) / 2;

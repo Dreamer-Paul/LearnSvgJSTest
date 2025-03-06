@@ -125,13 +125,14 @@ export const getAlign = (alignStr: string): [TextControlOption["textAlign"], Tex
   const verticalAlignMap: Record<string, TextControlOption["verticalAlign"]> = {
     t: "top",
     b: "bottom",
-    c: "center",
+    c: "middle",
+    m: "middle",
   };
 
   const [hAlign, vAlign] = alignStr.split("");
 
   const textAlign = horizontalAlignMap[hAlign] || "left";
-  const verticalAlign = verticalAlignMap[vAlign] || "center";
+  const verticalAlign = verticalAlignMap[vAlign] || "middle";
 
   return [textAlign, verticalAlign];
 };

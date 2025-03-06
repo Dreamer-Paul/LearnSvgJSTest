@@ -12,7 +12,12 @@ import SmartArtStyle from "./style";
 import SmartArtText from "./text";
 import SmartArtExport from "./export";
 import SmartArtOption, { type ISmartArtOptionItem } from "./option";
-import { getAlign, getBoundingClientRect, getIconPosition, getTextPosition } from "./utils";
+import {
+  getAlign,
+  getBoundingClientRect,
+  getIconPosition,
+  getTextPosition,
+} from "./utils";
 
 export interface ItemOption {
   x: number;
@@ -42,7 +47,7 @@ export interface TextControlOption {
   index: number;
   style?: object;
   textAlign: "left" | "center" | "right";
-  verticalAlign?: "top" | "center" | "bottom";
+  verticalAlign?: "top" | "middle" | "bottom";
 }
 
 export interface SkeletonStructures {
@@ -98,6 +103,8 @@ class SmartArtEditor {
   private textGroupsEl: SvgJSElement[] = [];
   // 图标
   private iconGroupsEl: SvgJSElement[] = [];
+
+  private patternGroupsEl: SvgJSElement[] = [];
 
   // 回调
   private onUpdateAddButtons:
@@ -282,7 +289,7 @@ class SmartArtEditor {
       const id = item.id();
       const index = parseInt(id.split("-").pop() || "0", 10) - 1;
 
-      const { x, y } = getBoundingClientRect(item);
+      const { x, y } = getIconPosition(item);
 
       let type: "add" | "remove" = "add";
 
@@ -369,23 +376,25 @@ class SmartArtEditor {
     this.style.setBackgroundStyle(this.bgEl, this._style);
 
     // 画元素
-    this.skeletonStructures.pattern.forEach((item, index) => {
-      const g = this.draw.group();
-      g.id(`g-${item.id}`);
+    this.patternGroupsEl = this.skeletonStructures.pattern.map(
+      (item, index) => {
+        const g = this.draw.group();
+        g.id(`g-${item.id}`);
 
-      if (item.x && item.y) {
-        g.translate(item.x, item.y);
+        if (item.x && item.y) {
+          g.translate(item.x, item.y);
+        }
+
+        const path = g.path(item.path);
+        const styleItem = this.style.getStyleItem(this._style);
+
+        if (styleItem?.rect) {
+          this.style.applyStyle(g, styleItem.rect, index);
+        }
+
+        return g;
       }
-
-      const path = g.path(item.path);
-      const styleItem = this.style.getStyleItem(this._style);
-
-      if (styleItem?.rect) {
-        this.style.setRectStyle(path, styleItem, index);
-      }
-
-      return g;
-    });
+    );
 
     // 画文字
     this.textEl = this.textPlaceholdersOptions.map((item) => {
@@ -418,7 +427,7 @@ class SmartArtEditor {
       // 靠顶部对齐
       let bottomY = y + offsetY;
 
-      if (verticalAlign === "center") {
+      if (verticalAlign === "middle") {
         bottomY = y + (height - textBbox.height) / 2 + offsetY;
       } else if (verticalAlign === "bottom") {
         bottomY = y + height - textBbox.height + offsetY;
@@ -432,15 +441,32 @@ class SmartArtEditor {
     this.onUpdateControlTexts?.(this.textPlaceholdersOptions);
 
     // 画图标
-    this.iconGroupsEl = this.iconPlaceholdersOptions.map((item) => {
+    const styleItem = this.style.getStyleItem(this._style);
+
+    this.iconGroupsEl = this.iconPlaceholdersOptions.map((item, index) => {
       const option = this.option.getIcon(item.id);
 
       if (option) {
-        return this.icon.drawIcon(item, option.name);
+        const g = this.icon.drawIcon(item, option.name);
+
+        let aa;
+        if (typeof styleItem?.icon === "function") {
+          aa = styleItem.icon(index);
+        } else {
+          aa = styleItem?.icon;
+        }
+
+        if (g) {
+          this.style.applyStyle(
+            g,
+            this.style.mixStyle(aa, option.style),
+            index
+          );
+        }
+
+        return g;
       }
     }) as G[];
-
-    this.styleIcon();
   }
 
   styleIcon() {
@@ -451,7 +477,9 @@ class SmartArtEditor {
     }
 
     this.iconGroupsEl.forEach((group, index) => {
-      group && this.style.setIconStyle(group, styleItem, index);
+      // const option = this.option.getIcon(item.id);
+
+      group && this.style.applyStyle(group, styleItem.icon, index);
     });
   }
 
@@ -546,6 +574,14 @@ class SmartArtEditor {
 
     this.bgEl && this.style.setBackgroundStyle(this.bgEl, this._style);
     this.styleIcon();
+
+    this.patternGroupsEl.forEach((item, index) => {
+      const styleItem = this.style.getStyleItem(this._style);
+
+      if (styleItem?.rect) {
+        this.style.applyStyle(item, styleItem.rect, index);
+      }
+    });
   }
 
   /**

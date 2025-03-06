@@ -164,6 +164,14 @@ const fakeData = {
         "text-5-desc": {
           text: "她的角色强调对死亡和命运的深刻理解与希望的追寻。",
         },
+        "icon-0": {
+          name: "profile-line",
+          style: {
+            stroke: {
+              color: "#222",
+            }
+          }
+        },
         "icon-1": {
           name: "profile-line",
         },

@@ -197,6 +197,12 @@ const templates: Record<TemplateCategory, ISmartArtTemplate[]> = {
   ],
   pillars: [
     {
+      name: "test1-family",
+      type: "pillars",
+      min: 2,
+      max: 6,
+    },
+    {
       name: "pillars-chain-v6--family",
       type: "pillars",
       min: 2,

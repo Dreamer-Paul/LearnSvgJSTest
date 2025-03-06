@@ -1,3 +1,5 @@
+import type { StrokeData } from "@svgdotjs/svg.js";
+
 export interface ISmartArtOptionTextItem {
   text: string;
   style?: object;
@@ -5,6 +7,9 @@ export interface ISmartArtOptionTextItem {
 
 export interface ISmartArtOptionIconItem {
   name: string;
+  style?: {
+    stroke?: StrokeData;
+  };
 }
 
 export type ISmartArtOptionItem =
