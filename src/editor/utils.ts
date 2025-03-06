@@ -61,57 +61,58 @@ export const getTextPosition = (el: Element) => {
   };
 };
 
+export const getIconPosition = (el: Element) => {
+  const bbox = el.bbox();
+
+  if (el.attr("transform")) {
+    const ctm = el.ctm();
+
+    return {
+      x: ctm.e,
+      y: ctm.f,
+      height: bbox.height,
+      width: bbox.width,
+    }
+  }
+
+  return {
+    x: bbox.x,
+    y: bbox.y,
+    height: bbox.height,
+    width: bbox.width,
+  }
+}
+
 // 获取元素相对于画布的标准位置
 export const getBoundingClientRect = (
   el: Element
 ): { x: number; y: number; width: number; height: number } => {
-  const position = el.attr("data-position") as string;
-  const transform = el.attr("transform") as string;
+  const bbox = el.bbox();
+  const ctm = el.ctm();
 
-  const rect = el.node.getBoundingClientRect();
-  const svg = el.root().node as SVGSVGElement;
-  const svgRect = svg.getBoundingClientRect();
-
-  if (position) {
-    const [x, y, width, height] = position
-      .split(";")
-      .map((item) => parseInt(item.split(":")[1]));
-
+  // 单独处理 rect 对象
+  if (el.node.tagName === "rect") {
     return {
-      x: rect.left - svgRect.left,
-      y: rect.top - svgRect.top,
-      width,
-      height,
-    };
-  }
-  console.log("x", el.x(), "y", el.y(), "rect", rect);
-
-  if (transform) {
-    const matrix = el.matrix();
-    const x = matrix.e;
-    const y = matrix.f;
-    // console.log("transform", transform, el.id(), matrix);
-
-    return {
-      x,
-      y,
-      width: rect.width,
-      height: rect.height,
-    };
+      x: el.x() as number + ctm.e,
+      y: el.y() as number + ctm.f,
+      height: bbox.height,
+      width: bbox.width,
+    }
   }
 
-  console.log("fuck", el.id());
+  console.log("others", el.node.tagName);
 
+  // path 或者 g 对象
   return {
-    x: 0,
-    y: 0,
-    // x: rect.left - svgRect.left,
-    // y: rect.top - svgRect.top,
-    // x: el.x(),
-    // y: el.y(),
-    width: rect.width,
-    height: rect.height,
-  };
+    // x: ctm.e + bbox.x,
+    // y: ctm.f + bbox.y,
+    x: ctm.e,
+    y: ctm.f,
+    // x: bbox.x,
+    // y: bbox.y,
+    height: bbox.height,
+    width: bbox.width,
+  }
 };
 
 export const getAlign = (alignStr: string): [TextControlOption["textAlign"], TextControlOption["verticalAlign"]] => {

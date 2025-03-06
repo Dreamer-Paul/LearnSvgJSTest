@@ -12,7 +12,7 @@ import SmartArtStyle from "./style";
 import SmartArtText from "./text";
 import SmartArtExport from "./export";
 import SmartArtOption, { type ISmartArtOptionItem } from "./option";
-import { getAlign, getBoundingClientRect, getTextPosition } from "./utils";
+import { getAlign, getBoundingClientRect, getIconPosition, getTextPosition } from "./utils";
 
 export interface ItemOption {
   x: number;
@@ -183,8 +183,7 @@ class SmartArtEditor {
       const keyName = id.substring(id.indexOf("-", id.indexOf("-") + 1) + 1);
 
       const [textAlign, verticalAlign] = getAlign(align);
-      const { x, y } = getTextPosition(el);
-      const { width, height } = getBoundingClientRect(el);
+      const { x, y, width, height } = getTextPosition(el);
 
       const textItem = {
         id: keyName,
@@ -212,7 +211,7 @@ class SmartArtEditor {
       // 新版 keyName，根据 keyName 获取和存储节点设置
       const keyName = id.substring(id.indexOf("-", id.indexOf("-") + 1) + 1);
 
-      const { x, y } = getTextPosition(el);
+      const { x, y } = getIconPosition(el);
 
       const iconItem = {
         id: keyName,
