@@ -35,11 +35,17 @@ onMounted(async () => {
       "text-title": {
         text: "测试标题",
         style: {
-          weight: "bold",
-          size: 28,
-          fill: "red",
-          stroke: "gray",
-          strokeWidth: 3,
+          font: {
+            weight: "bold",
+            size: 30,
+          },
+          fill: {
+            color: "red",
+          },
+          stroke: {
+            color: "black",
+            // width: 3,
+          },
         },
       },
       "text-1": {
@@ -256,7 +262,7 @@ const onClickTestRedraw = () => {
         v-if="controlTextTextarea"
         :style="{
           position: 'absolute',
-          fontSize: controlTextTextarea?.style?.size + 'px',
+          fontSize: controlTextTextarea?.style?.font?.size + 'px',
           width: controlTextTextarea?.width + 'px',
           height: controlTextTextarea?.height + 'px',
           left: controlTextTextarea?.x + 'px',
