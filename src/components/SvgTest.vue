@@ -344,6 +344,6 @@ const onClickTestRedraw = () => {
 
 .text-controls span:hover {
   border: 2px solid #2292ff;
-  border-radius: .5em;
+  border-radius: 0.5em;
 }
 </style>

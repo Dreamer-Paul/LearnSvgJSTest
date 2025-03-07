@@ -37,18 +37,20 @@ class SmartArtText {
 
       words.forEach((word) => {
         tempText.text(currentLine + word);
+        const bbox = tempText.bbox();
+        const actualWidth = bbox.width;
 
-        if (tempText.length() >= width) {
+        if (actualWidth >= width) {
           lines.push({
             text: currentLine,
             width: currentLineWidth,
             height: size,
           });
           currentLine = word;
-          currentLineWidth = tempText.length();
+          currentLineWidth = tempText.text(word).bbox().width;
         } else {
           currentLine += word;
-          currentLineWidth = tempText.length();
+          currentLineWidth = actualWidth;
         }
       });
 
