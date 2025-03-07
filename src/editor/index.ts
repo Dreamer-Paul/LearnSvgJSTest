@@ -510,15 +510,17 @@ class SmartArtEditor {
     textAlign,
     style,
     node,
+    index,
   }: {
     text: string;
     width: number;
     textAlign: "left" | "right" | "center";
-    style?: object;
+    style?: IStyle;
     node: Text;
+    index: number;
   }) {
     const t = node.text((add) => {
-      const lines = this.text.wrapText(text, width, style);
+      const lines = this.text.wrapText(text, width, style?.font);
 
       lines.forEach((line) => {
         const tspan = add.tspan(line.text).newLine();
@@ -532,6 +534,30 @@ class SmartArtEditor {
           tspan.dx((width - line.width) / 2); // 居中对齐
         }
       });
+
+      // 更新不需要重新应用样式
+    });
+
+    // 重新垂直居中
+    const { x, y, verticalAlign, height } = this.skeletonStructures.text[index];
+
+    const textBbox = t.bbox();
+
+    // 弥补基线需要的高度
+    const offsetY = (style?.font?.size as number) || 0;
+    // 靠顶部对齐
+    let bottomY = y + offsetY;
+
+    if (verticalAlign === "middle") {
+      bottomY = y + (height - textBbox.height) / 2 + offsetY;
+    } else if (verticalAlign === "bottom") {
+      bottomY = y + height - textBbox.height + offsetY;
+    }
+
+    // ! 这里是覆盖之前的设置，所以和初始化的时候调用的不同
+    t.transform({
+      translateX: x,
+      translateY: bottomY,
     });
 
     return t;
@@ -631,6 +657,7 @@ class SmartArtEditor {
       },
       textAlign: data.textAlign,
       node,
+      index: data.index,
     });
 
     this.option.setItem(`text-${data.id}`, { text: data.text });
