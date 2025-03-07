@@ -6,7 +6,6 @@ import {
   type Svg,
   G,
   Element,
-  type FontData,
 } from "@svgdotjs/svg.js";
 import SmartArtIcon from "./icon";
 import SmartArtStyle, { type IStyle } from "./style";
@@ -198,9 +197,14 @@ class SmartArtEditor {
       const element = el as Path;
       const id = element.id();
 
-      // 新版 keyName，根据 keyName 获取和存储节点设置
+      // 根据 keyName 获取和存储节点设置
       const align = id.split("-", 2)[1];
-      const keyName = id.substring(id.indexOf("-", id.indexOf("-") + 1) + 1);
+      let keyName = id.substring(id.indexOf("-", id.indexOf("-") + 1) + 1);
+
+      // V2 版本的 ID
+      if (id.includes(":")) {
+        keyName = id.split(":")[1];
+      }
 
       const [textAlign, verticalAlign] = getAlign(align);
       const { x, y, width, height } = getTextPosition(el);
@@ -228,11 +232,16 @@ class SmartArtEditor {
   async prepareIcon() {
     this.iconPlaceholdersOptions = [];
 
-    this.draw.find("[id^='ic-']").each((el, index) => {
+    this.draw.find("[id^='ic-'], [id^='ic:']").each((el, index) => {
       const id = el.id();
 
-      // 新版 keyName，根据 keyName 获取和存储节点设置
-      const keyName = id.substring(id.indexOf("-", id.indexOf("-") + 1) + 1);
+      // 根据 keyName 获取和存储节点设置
+      let keyName = id.substring(id.indexOf("-", id.indexOf("-") + 1) + 1);
+
+      // V2 版本的 ID
+      if (id.includes(":")) {
+        keyName = id.split(":")[1];
+      }
 
       const { x, y } = getIconPosition(el);
 
@@ -252,17 +261,27 @@ class SmartArtEditor {
   }
 
   async preparePattern() {
-    this.draw.find("#lines [id^='g-']").each((el) => {
+    this.draw.find("#lines [id^='g-'], #patterns [id^='pt']").each((el) => {
       const id = el.id();
-      const keyName = id.split("-", 2)[1];
 
-      const pathEl = el.findOne("path") as Element | null;
+      // 根据 keyName 获取和存储节点设置
+      let keyName = id.split("-", 2)[1];
+
+      // V2 版本的 ID
+      if (id.includes(":")) {
+        keyName = id.split(":")[1];
+      }
+
+      let pathEl;
+      if (el.node.tagName === "path") {
+        pathEl = el;
+      } else {
+        pathEl = el.findOne("path") as Element | null;
+      }
 
       if (!pathEl) {
         return;
       }
-
-      console.log("preparePatternS", keyName);
 
       const { x, y } = getBoundingClientRect(pathEl);
 
@@ -289,7 +308,12 @@ class SmartArtEditor {
 
     placeholderEls.each((item) => {
       const id = item.id();
-      const index = parseInt(id.split("-").pop() || "0", 10) - 1;
+      let index = parseInt(id.split("-").pop() || "0", 10) - 1;
+
+      // V2 版本的 ID
+      if (id.includes(":")) {
+        index = parseInt(id.split(":")[1] || "0", 10) - 1;
+      }
 
       const { x, y } = getIconPosition(item);
 

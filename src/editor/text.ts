@@ -22,7 +22,7 @@ class SmartArtText {
     const draw = this.draw;
     const lines: { text: string; width: number; height: number }[] = [];
     const paragraphs = text.split("\n");
-    const size = style?.size || 18;
+    const size = (style?.size as number) || 18;
 
     // 创建临时文本元素来测量宽度
     const tempText = draw.text("").font({
