@@ -1,4 +1,4 @@
-import { type Svg } from "@svgdotjs/svg.js";
+import { type FontData, type Svg } from "@svgdotjs/svg.js";
 
 export interface ISmartArtDataItem {
   text: string;
@@ -18,11 +18,7 @@ class SmartArtText {
     this.draw = draw;
   }
 
-  wrapText(
-    text: string,
-    width: number,
-    style?: { size?: number; [key: string]: any }
-  ) {
+  wrapText(text: string, width: number, style?: FontData) {
     const draw = this.draw;
     const lines: { text: string; width: number; height: number }[] = [];
     const paragraphs = text.split("\n");

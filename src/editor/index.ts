@@ -6,9 +6,10 @@ import {
   type Svg,
   G,
   Element,
+  type FontData,
 } from "@svgdotjs/svg.js";
 import SmartArtIcon from "./icon";
-import SmartArtStyle from "./style";
+import SmartArtStyle, { type IStyle } from "./style";
 import SmartArtText from "./text";
 import SmartArtExport from "./export";
 import SmartArtOption, { type ISmartArtOptionItem } from "./option";
@@ -45,7 +46,7 @@ export interface TextControlOption {
   width: number;
   height: number;
   index: number;
-  style?: object;
+  style?: IStyle;
   textAlign: "left" | "center" | "right";
   verticalAlign?: "top" | "middle" | "bottom";
 }
@@ -100,7 +101,6 @@ class SmartArtEditor {
   private textPlaceholdersOptions: TextControlOption[] = [];
   private iconPlaceholdersOptions: TextControlOption[] = [];
 
-  private textGroupsEl: SvgJSElement[] = [];
   // 图标
   private iconGroupsEl: SvgJSElement[] = [];
 
@@ -212,7 +212,9 @@ class SmartArtEditor {
         width: width || (el.width() as number),
         height: height || (el.height() as number),
         index,
-        style: getFontStyle(keyName),
+        style: {
+          font: getFontStyle(keyName),
+        },
         textAlign,
         verticalAlign,
       };
@@ -250,7 +252,7 @@ class SmartArtEditor {
   }
 
   async preparePattern() {
-    this.draw.find("#lines [id^='g-']").each((el, index) => {
+    this.draw.find("#lines [id^='g-']").each((el) => {
       const id = el.id();
       const keyName = id.split("-", 2)[1];
 
@@ -321,8 +323,8 @@ class SmartArtEditor {
   async fillOptions() {
     // 新模板的 Options 包含什么 Keys，做补全和删除
     const optionKeys = [
-      ...this.textPlaceholdersOptions.map((item) => `text-${item.id}`),
-      ...this.iconPlaceholdersOptions.map((item) => `icon-${item.id}`),
+      ...this.skeletonStructures.text.map((item) => `text-${item.id}`),
+      ...this.skeletonStructures.icon.map((item) => `icon-${item.id}`),
     ];
 
     const nextOption: Record<string, ISmartArtOptionItem> = {};
@@ -375,18 +377,18 @@ class SmartArtEditor {
     this.bgEl = this.draw.rect(width, height);
     this.style.setBackgroundStyle(this.bgEl, this._style);
 
+    const styleItem = this.style.getStyleItem(this._style);
+
     // 画元素
     this.patternGroupsEl = this.skeletonStructures.pattern.map(
       (item, index) => {
         const g = this.draw.group();
         g.id(`g-${item.id}`);
+        g.path(item.path);
 
         if (item.x && item.y) {
           g.translate(item.x, item.y);
         }
-
-        const path = g.path(item.path);
-        const styleItem = this.style.getStyleItem(this._style);
 
         if (styleItem?.rect) {
           this.style.applyStyle(g, styleItem.rect, index);
@@ -423,7 +425,7 @@ class SmartArtEditor {
       const centerX = x + (width - textBbox.width) / 2;
 
       // 弥补基线需要的高度
-      const offsetY = style?.size || 0;
+      const offsetY = (style?.font?.size as number) || 0;
       // 靠顶部对齐
       let bottomY = y + offsetY;
 
@@ -441,31 +443,27 @@ class SmartArtEditor {
     this.onUpdateControlTexts?.(this.textPlaceholdersOptions);
 
     // 画图标
-    const styleItem = this.style.getStyleItem(this._style);
-
     this.iconGroupsEl = this.skeletonStructures.icon.map((item, index) => {
       const option = this.option.getIcon(item.id);
 
-      if (option) {
-        const g = this.icon.drawIcon(item, option.name);
-
-        let aa;
-        if (typeof styleItem?.icon === "function") {
-          aa = styleItem.icon(index);
-        } else {
-          aa = styleItem?.icon;
-        }
-
-        if (g) {
-          this.style.applyStyle(
-            g,
-            this.style.mixStyle(aa, option.style),
-            index
-          );
-        }
-
-        return g;
+      if (!option) {
+        return;
       }
+
+      const g = this.icon.drawIcon(item, option.name);
+
+      let aa;
+      if (typeof styleItem?.icon === "function") {
+        aa = styleItem.icon(index);
+      } else {
+        aa = styleItem?.icon;
+      }
+
+      if (g) {
+        this.style.applyStyle(g, this.style.mixStyle(aa, option.style), index);
+      }
+
+      return g;
     }) as G[];
   }
 
@@ -479,11 +477,11 @@ class SmartArtEditor {
     text: string;
     width: number;
     textAlign: "left" | "right" | "center";
-    style: object;
+    style: IStyle;
     node?: Text;
   }) {
     const t = this.draw.text((add) => {
-      const lines = this.text.wrapText(text, width, style);
+      const lines = this.text.wrapText(text, width, style.font);
 
       lines.forEach((line) => {
         const tspan = add.tspan(line.text).newLine();
@@ -498,7 +496,9 @@ class SmartArtEditor {
         }
       });
 
-      add.font(style);
+      style.font && add.font(style.font);
+      style.fill && add.fill(style.fill);
+      style.stroke && add.stroke(style.stroke);
     });
 
     return t;

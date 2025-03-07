@@ -1,4 +1,4 @@
-import type { Element, Svg, StrokeData, FillData } from "@svgdotjs/svg.js";
+import type { Element, Svg, StrokeData, FillData, FontData } from "@svgdotjs/svg.js";
 
 // 预设的颜色组合，更换模版可取这里的颜色做风格化
 const presetColors = ["#d70505", "#ffa700", "#48ce07", "#02d09e", "#028dd0"];
@@ -140,12 +140,13 @@ const styleList: ISmartArtStyle[] = [
 
 export const styleNames = styleList.map((item) => item.name);
 
-interface IStyle {
+export interface IStyle {
   fill?: FillData;
   stroke?: StrokeData;
+  font?: FontData;
 }
 
-type IStyleFn = IStyle | ((index: number) => IStyle);
+export type IStyleFn = IStyle | ((index: number) => IStyle);
 
 interface ISmartArtStyle {
   name: string;

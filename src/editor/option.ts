@@ -1,8 +1,12 @@
-import type { StrokeData } from "@svgdotjs/svg.js";
+import type { FillData, FontData, StrokeData } from "@svgdotjs/svg.js";
 
 export interface ISmartArtOptionTextItem {
   text: string;
-  style?: object;
+  style?: {
+    fill?: FillData;
+    stroke?: StrokeData;
+    font?: FontData;
+  }
 }
 
 export interface ISmartArtOptionIconItem {
@@ -36,8 +40,6 @@ class SmartArtOption {
   }
 
   getText(name: string) {
-    // console.log(this.data, `text-${name}`);
-
     return this.data[`text-${name}`] as ISmartArtOptionTextItem | undefined;
   }
 
