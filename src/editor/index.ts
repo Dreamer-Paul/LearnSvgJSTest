@@ -423,7 +423,7 @@ class SmartArtEditor {
     );
 
     // 画文字
-    this.textEl = this.skeletonStructures.text.map((item) => {
+    this.textEl = this.skeletonStructures.text.map((item, index) => {
       const { x, y, id, textAlign, verticalAlign, width, height, style } = item;
 
       const option = this.option.getText(id);
@@ -460,6 +460,14 @@ class SmartArtEditor {
       }
 
       text.translate(x, bottomY);
+
+      // 更新外部占位符的位置
+      this.textPlaceholdersOptions[index] = {
+        ...this.textPlaceholdersOptions[index],
+        height: textBbox.height,
+        x,
+        y: bottomY - offsetY,
+      };
 
       return text;
     }) as SvgJSElement[];
@@ -583,6 +591,16 @@ class SmartArtEditor {
       translateX: x,
       translateY: bottomY,
     });
+
+    // 更新外部占位符的位置
+    this.textPlaceholdersOptions[index] = {
+      ...this.textPlaceholdersOptions[index],
+      height: textBbox.height,
+      x,
+      y: bottomY - offsetY,
+    };
+
+    this.onUpdateControlTexts?.(this.textPlaceholdersOptions);
 
     return t;
   }
