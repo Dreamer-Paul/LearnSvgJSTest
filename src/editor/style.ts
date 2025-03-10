@@ -1,4 +1,10 @@
-import type { Element, Svg, StrokeData, FillData, FontData } from "@svgdotjs/svg.js";
+import type {
+  Element,
+  Svg,
+  StrokeData,
+  FillData,
+  FontData,
+} from "@svgdotjs/svg.js";
 
 // 预设的颜色组合，更换模版可取这里的颜色做风格化
 const presetColors = ["#d70505", "#ffa700", "#48ce07", "#02d09e", "#028dd0"];
@@ -199,35 +205,39 @@ class SmartArtStyle {
 
   /**
    * 合并多个样式
-   * @param style
-   * @param style2
-   * @returns {object}
+   * @param styles
+   * @returns {IStyle}
    */
-  mixStyle(style: IStyle | undefined, style2?: IStyle | undefined) {
-    const res: any = {
-      stroke: {
-        ...style?.stroke,
-        ...style2?.stroke,
-      },
-      fill: {
-        ...style?.fill,
-        ...style2?.fill,
-      },
-      font: {
-        ...style?.font,
-        ...style2?.font,
-      },
-    }
+  mixStyle(...styles: (IStyle | undefined)[]): IStyle {
+    const res: IStyle = {
+      stroke: {},
+      fill: {},
+      font: {},
+    };
 
-    if (Object.keys(res.stroke).length === 0) {
+    styles.forEach((style) => {
+      if (style) {
+        if (style.stroke) {
+          res.stroke = { ...res.stroke, ...style.stroke };
+        }
+        if (style.fill) {
+          res.fill = { ...res.fill, ...style.fill };
+        }
+        if (style.font) {
+          res.font = { ...res.font, ...style.font };
+        }
+      }
+    });
+
+    if (res.stroke && Object.keys(res.stroke).length === 0) {
       delete res.stroke;
     }
 
-    if (Object.keys(res.fill).length === 0) {
+    if (res.fill && Object.keys(res.fill).length === 0) {
       delete res.fill;
     }
 
-    if (Object.keys(res.font).length === 0) {
+    if (res.font && Object.keys(res.font).length === 0) {
       delete res.font;
     }
 

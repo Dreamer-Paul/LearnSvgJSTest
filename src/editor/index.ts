@@ -441,8 +441,11 @@ class SmartArtEditor {
 
       console.log("templateStyle", templateStyle);
 
-      let mixedStyle = this.style.mixStyle(style, templateStyle);
-      mixedStyle = this.style.mixStyle(mixedStyle, option.style);
+      const mixedStyle = this.style.mixStyle(
+        style,
+        templateStyle,
+        option.style
+      );
 
       const text = this.drawText({
         textAlign,
@@ -664,8 +667,11 @@ class SmartArtEditor {
         templateStyle = styleItem?.text;
       }
 
-      let mixedStyle = this.style.mixStyle(textOption.style, templateStyle)
-      mixedStyle = this.style.mixStyle(mixedStyle, option.style);
+      const mixedStyle = this.style.mixStyle(
+        textOption.style,
+        templateStyle,
+        option.style
+      );
 
       this.updateDrawText({
         text: option.text,
