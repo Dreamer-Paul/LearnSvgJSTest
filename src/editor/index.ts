@@ -183,7 +183,7 @@ class SmartArtEditor {
 
     const getFontStyle = (keyName: string) => {
       if (keyName.includes("title")) {
-        return { weight: "bold", size: 28 };
+        return { weight: "bold", size: 30 };
       }
 
       if (keyName.includes("desc")) {
@@ -432,16 +432,23 @@ class SmartArtEditor {
         return;
       }
 
+      let templateStyle;
+      if (typeof styleItem?.text === "function") {
+        templateStyle = styleItem.text(index);
+      } else {
+        templateStyle = styleItem?.text;
+      }
+
+      console.log("templateStyle", templateStyle);
+
+      let mixedStyle = this.style.mixStyle(style, templateStyle);
+      mixedStyle = this.style.mixStyle(mixedStyle, option.style);
+
       const text = this.drawText({
         textAlign,
         text: option.text,
         width,
-        style: {
-          // 默认初始化的样式
-          ...style,
-          // 选项的样式，优先级更高
-          ...option.style,
-        },
+        style: mixedStyle,
       });
 
       const textBbox = text.bbox();
@@ -484,15 +491,19 @@ class SmartArtEditor {
 
       const g = this.icon.drawIcon(item, option.name);
 
-      let aa;
+      let templateStyle;
       if (typeof styleItem?.icon === "function") {
-        aa = styleItem.icon(index);
+        templateStyle = styleItem.icon(index);
       } else {
-        aa = styleItem?.icon;
+        templateStyle = styleItem?.icon;
       }
 
       if (g) {
-        this.style.applyStyle(g, this.style.mixStyle(aa, option.style), index);
+        this.style.applyStyle(
+          g,
+          this.style.mixStyle(templateStyle, option.style),
+          index
+        );
       }
 
       return g;
@@ -638,7 +649,33 @@ class SmartArtEditor {
     });
 
     // 修改文字样式
-    // Todo
+    this.textEl.forEach((item, index) => {
+      const textOption = this.skeletonStructures.text[index];
+      const option = this.option.getText(textOption.id);
+
+      if (!option) {
+        return;
+      }
+
+      let templateStyle;
+      if (typeof styleItem?.text === "function") {
+        templateStyle = styleItem.text(index);
+      } else {
+        templateStyle = styleItem?.text;
+      }
+
+      let mixedStyle = this.style.mixStyle(textOption.style, templateStyle)
+      mixedStyle = this.style.mixStyle(mixedStyle, option.style);
+
+      this.updateDrawText({
+        text: option.text,
+        width: textOption.width,
+        textAlign: textOption.textAlign,
+        style: mixedStyle,
+        node: item as Text,
+        index,
+      });
+    });
 
     // 修改图标样式
     this.skeletonStructures.icon.forEach((item, index) => {
@@ -647,17 +684,17 @@ class SmartArtEditor {
       if (option) {
         const g = this.iconGroupsEl[index];
 
-        let aa;
+        let templateStyle;
         if (typeof styleItem?.icon === "function") {
-          aa = styleItem.icon(index);
+          templateStyle = styleItem.icon(index);
         } else {
-          aa = styleItem?.icon;
+          templateStyle = styleItem?.icon;
         }
 
         if (g) {
           this.style.applyStyle(
             g,
-            this.style.mixStyle(aa, option.style),
+            this.style.mixStyle(templateStyle, option.style),
             index
           );
         }

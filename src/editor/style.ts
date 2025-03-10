@@ -4,12 +4,14 @@ import type { Element, Svg, StrokeData, FillData, FontData } from "@svgdotjs/svg
 const presetColors = ["#d70505", "#ffa700", "#48ce07", "#02d09e", "#028dd0"];
 
 const presetColors2 = [
-  "#56C5E3",
-  "#F1BD36",
-  "#EB7551",
-  "#44CAA4",
-  "#9A70AF",
-  "#E38D53",
+  "#64B5F6",
+  "#FFD95C",
+  "#F06292",
+  "#4DD0E1",
+  "#9575CD",
+  "#FF8A65",
+  "#AED581",
+  "#DCE775",
 ];
 
 // 风格预设
@@ -211,6 +213,10 @@ class SmartArtStyle {
         ...style?.fill,
         ...style2?.fill,
       },
+      font: {
+        ...style?.font,
+        ...style2?.font,
+      },
     }
 
     if (Object.keys(res.stroke).length === 0) {
@@ -219,6 +225,10 @@ class SmartArtStyle {
 
     if (Object.keys(res.fill).length === 0) {
       delete res.fill;
+    }
+
+    if (Object.keys(res.font).length === 0) {
+      delete res.font;
     }
 
     return res;

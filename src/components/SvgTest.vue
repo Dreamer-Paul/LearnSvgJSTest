@@ -35,10 +35,6 @@ onMounted(async () => {
       "text-title": {
         text: "测试标题",
         style: {
-          font: {
-            weight: "bold",
-            size: 30,
-          },
           fill: {
             color: "red",
           },
