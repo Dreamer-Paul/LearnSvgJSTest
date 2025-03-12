@@ -28,7 +28,12 @@ const styleList: ISmartArtStyle[] = [
     background: {
       color: "#FEFAE0",
     },
-    rect: (index: number) => {
+    shape: {
+      fill: {
+        color: "#888",
+      },
+    },
+    pattern: (index: number) => {
       return {
         fill: {
           color: presetColors[index],
@@ -39,15 +44,6 @@ const styleList: ISmartArtStyle[] = [
         },
       };
     },
-    // rect: {
-    //   fill: {
-    //     color: "#A4B465",
-    //   },
-    //   stroke: {
-    //     color: "#626F47",
-    //     width: 2,
-    //   },
-    // },
     icon: {
       stroke: {
         color: "#FEFAE0",
@@ -61,7 +57,12 @@ const styleList: ISmartArtStyle[] = [
     background: {
       color: "#fff",
     },
-    rect: (index: number) => {
+    shape: {
+      fill: {
+        color: "#bbb",
+      },
+    },
+    pattern: (index: number) => {
       return {
         fill: {
           color: presetColors2[index],
@@ -85,7 +86,12 @@ const styleList: ISmartArtStyle[] = [
     background: {
       color: "#FBFFE4",
     },
-    rect: {
+    shape: {
+      fill: {
+        color: "#888",
+      },
+    },
+    pattern: {
       fill: {
         color: "#B3D8A8",
       },
@@ -106,7 +112,12 @@ const styleList: ISmartArtStyle[] = [
     background: {
       color: "#FFF2F2",
     },
-    rect: {
+    shape: {
+      fill: {
+        color: "#888",
+      },
+    },
+    pattern: {
       fill: {
         color: "#7886C7",
       },
@@ -128,7 +139,12 @@ const styleList: ISmartArtStyle[] = [
     background: {
       color: "#F2EFE7",
     },
-    rect: {
+    shape: {
+      fill: {
+        color: "#888",
+      },
+    },
+    pattern: {
       fill: {
         color: "#4C7B8B",
       },
@@ -159,7 +175,8 @@ export type IStyleFn = IStyle | ((index: number) => IStyle);
 interface ISmartArtStyle {
   name: string;
   background?: FillData;
-  rect: IStyleFn;
+  shape: IStyleFn;
+  pattern: IStyleFn;
   icon: IStyleFn;
   text?: IStyleFn;
 }

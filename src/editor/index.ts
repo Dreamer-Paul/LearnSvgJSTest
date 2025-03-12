@@ -26,6 +26,11 @@ export interface ItemOption {
   height: number;
 }
 
+export interface ShapeItemOption extends ItemOption {
+  id: string;
+  elements: SvgJSElement[];
+}
+
 export interface PatternItemOption extends ItemOption {
   id: string;
   path: string;
@@ -54,6 +59,7 @@ export interface SkeletonStructures {
   text: TextControlOption[];
   icon: TextControlOption[];
   pattern: PatternItemOption[];
+  shapes: ShapeItemOption[];
   control: ItemControlOption[];
 }
 
@@ -92,6 +98,7 @@ class SmartArtEditor {
     text: [],
     icon: [],
     pattern: [],
+    shapes: [],
     control: [],
   };
 
@@ -169,11 +176,13 @@ class SmartArtEditor {
     this.skeletonStructures.text = [];
     this.skeletonStructures.icon = [];
     this.skeletonStructures.pattern = [];
+    this.skeletonStructures.shapes = [];
     this.skeletonStructures.control = [];
 
     this.prepareText();
     this.prepareIcon();
     this.preparePattern();
+    this.prepareShapes();
     this.prepareControl();
   }
 
@@ -296,6 +305,39 @@ class SmartArtEditor {
     });
   }
 
+  async prepareShapes() {
+    this.draw.find("#objects [id^='ob']").each((el) => {
+      const id = el.id();
+
+      // 根据 keyName 获取和存储节点设置
+      let keyName = id.split(":")[1];
+
+      let pathEl;
+      if (el.node.tagName === "path") {
+        pathEl = el;
+      } else if (el.node.tagName === "rect") {
+        pathEl = el;
+      } else {
+        pathEl = el.findOne("path") as Element | null;
+      }
+
+      if (!pathEl) {
+        return;
+      }
+
+      const { x, y } = getBoundingClientRect(pathEl);
+
+      this.skeletonStructures.shapes.push({
+        id: keyName,
+        x,
+        y,
+        width: pathEl.width() as number,
+        height: pathEl.height() as number,
+        elements: [pathEl],
+      });
+    });
+  }
+
   /**
    * 向画布外添加增删管理按钮
    */
@@ -414,13 +456,40 @@ class SmartArtEditor {
           g.translate(item.x, item.y);
         }
 
-        if (styleItem?.rect) {
-          this.style.applyStyle(g, styleItem.rect, index);
+        if (styleItem?.pattern) {
+          this.style.applyStyle(g, styleItem.pattern, index);
         }
 
         return g;
       }
     );
+
+    const shapeGroup = this.draw.group().id("shapes");
+
+    this.skeletonStructures.shapes.forEach((item) => {
+      item.elements.forEach((el) => {
+        let templateStyle;
+        if (typeof styleItem?.shape === "function") {
+          // Todo: 改成用 id
+          templateStyle = styleItem?.shape(0);
+        } else {
+          templateStyle = styleItem?.shape;
+        }
+
+        // 线条元素
+        if (el.attr("fill") === "none") {
+
+        } else if (styleItem?.shape) {
+          this.style.applyStyle(el, styleItem.shape, 0);
+        }
+
+        shapeGroup.add(el);
+      });
+
+      // Todo: 暂时没有设置样式的功能
+
+      // return path;
+    });
 
     // 画文字
     this.textEl = this.skeletonStructures.text.map((item, index) => {
@@ -644,11 +713,25 @@ class SmartArtEditor {
 
     const styleItem = this.style.getStyleItem(this._style);
 
+    // 与内容有关的装饰性元素
     // Todo: 装饰性元素暂时没有 Options 自定义样式
     this.patternGroupsEl.forEach((item, index) => {
-      if (styleItem?.rect) {
-        this.style.applyStyle(item, styleItem.rect, index);
+      if (!styleItem?.pattern) {
+        return;
       }
+
+      this.style.applyStyle(item, styleItem.pattern, index);
+    });
+
+    // 与内容无关的装饰性元素
+    this.skeletonStructures.shapes.forEach((item, index) => {
+      if (!styleItem?.shape) {
+        return;
+      };
+
+      item.elements.forEach((el) => {
+        this.style.applyStyle(el, styleItem.shape, index);
+      });
     });
 
     // 修改文字样式
