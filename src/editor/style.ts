@@ -167,6 +167,11 @@ const styleList: ISmartArtStyle[] = [
         width: 2,
       },
     },
+    text: {
+      fill: {
+        color: "#4c4329",
+      },
+    },
   },
   {
     name: "black",

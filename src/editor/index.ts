@@ -13,6 +13,7 @@ import SmartArtText from "./text";
 import SmartArtExport from "./export";
 import SmartArtOption, { type ISmartArtOptionItem } from "./option";
 import {
+  clearStyle,
   getAlign,
   getBoundingClientRect,
   getIconPosition,
@@ -26,7 +27,7 @@ export interface ItemOption {
   height: number;
 }
 
-export interface ShapeItemOption extends ItemOption {
+export interface ShapeItemOption {
   id: string;
   elements: SvgJSElement[];
 }
@@ -312,28 +313,35 @@ class SmartArtEditor {
       // 根据 keyName 获取和存储节点设置
       let keyName = id.split(":")[1];
 
-      let pathEl;
+      let elements = [];
+
       if (el.node.tagName === "path") {
-        pathEl = el;
+        elements.push(el);
       } else if (el.node.tagName === "rect") {
-        pathEl = el;
-      } else {
-        pathEl = el.findOne("path") as Element | null;
+        elements.push(el);
+      }
+      // 组元素分别拿出里面所有元素，清理样式
+      else if (el.node.tagName === "g") {
+        const g = this.draw.group();
+        g.id(`g-${keyName}`);
+
+        el.find("path").each((p) => {
+          clearStyle(p, ["d"]);
+          g.add(p);
+        });
+
+        elements.push(g);
       }
 
-      if (!pathEl) {
+      if (elements.length === 0) {
         return;
       }
 
-      const { x, y } = getBoundingClientRect(pathEl);
+      console.log("elements", elements);
 
       this.skeletonStructures.shapes.push({
         id: keyName,
-        x,
-        y,
-        width: pathEl.width() as number,
-        height: pathEl.height() as number,
-        elements: [pathEl],
+        elements,
       });
     });
   }

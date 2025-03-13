@@ -29,7 +29,7 @@ export const getTextPosition = (el: Element) => {
       y: bbox.y,
       width: bbox.width,
       height: bbox.height,
-    }
+    };
   }
 
   // 没有包裹
@@ -41,7 +41,7 @@ export const getTextPosition = (el: Element) => {
         y: ctm.f,
         width: bbox.width,
         height: bbox.height,
-      }
+      };
     }
 
     return {
@@ -49,7 +49,7 @@ export const getTextPosition = (el: Element) => {
       y: bbox.y,
       width: bbox.width,
       height: bbox.height,
-    }
+    };
   }
 
   // 待定，异常情况
@@ -72,7 +72,7 @@ export const getIconPosition = (el: Element) => {
       y: ctm.f,
       height: bbox.height,
       width: bbox.width,
-    }
+    };
   }
 
   return {
@@ -80,8 +80,8 @@ export const getIconPosition = (el: Element) => {
     y: bbox.y,
     height: bbox.height,
     width: bbox.width,
-  }
-}
+  };
+};
 
 // 获取元素相对于画布的标准位置
 export const getBoundingClientRect = (
@@ -93,11 +93,11 @@ export const getBoundingClientRect = (
   // 单独处理 rect 对象
   if (el.node.tagName === "rect") {
     return {
-      x: el.x() as number + ctm.e,
-      y: el.y() as number + ctm.f,
+      x: (el.x() as number) + ctm.e,
+      y: (el.y() as number) + ctm.f,
       height: bbox.height,
       width: bbox.width,
-    }
+    };
   }
 
   console.log("others", el.node.tagName);
@@ -112,10 +112,12 @@ export const getBoundingClientRect = (
     // y: bbox.y,
     height: bbox.height,
     width: bbox.width,
-  }
+  };
 };
 
-export const getAlign = (alignStr: string): [TextControlOption["textAlign"], TextControlOption["verticalAlign"]] => {
+export const getAlign = (
+  alignStr: string
+): [TextControlOption["textAlign"], TextControlOption["verticalAlign"]] => {
   const horizontalAlignMap: Record<string, TextControlOption["textAlign"]> = {
     l: "left",
     r: "right",
@@ -135,4 +137,16 @@ export const getAlign = (alignStr: string): [TextControlOption["textAlign"], Tex
   const verticalAlign = verticalAlignMap[vAlign] || "middle";
 
   return [textAlign, verticalAlign];
+};
+
+export const clearStyle = (el: Element, excludeAttr = ["id", "transform"]) => {
+  const attributes = el.node.attributes;
+
+  for (let i = attributes.length - 1; i >= 0; i--) {
+    const attrName = attributes[i].name;
+
+    if (!excludeAttr.includes(attrName)) {
+      el.node.removeAttribute(attrName);
+    }
+  }
 };
