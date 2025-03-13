@@ -24,7 +24,7 @@ const presetColors2 = [
 const styleList: ISmartArtStyle[] = [
   {
     // 模板名称
-    name: "test1",
+    name: "TestColors1",
     background: {
       color: "#FEFAE0",
     },
@@ -53,7 +53,7 @@ const styleList: ISmartArtStyle[] = [
   },
   {
     // 模板名称
-    name: "Colors1",
+    name: "TestColors2",
     background: {
       color: "#fff",
     },
@@ -82,7 +82,7 @@ const styleList: ISmartArtStyle[] = [
     },
   },
   {
-    name: "test2",
+    name: "greenTree",
     background: {
       color: "#FBFFE4",
     },
@@ -108,13 +108,13 @@ const styleList: ISmartArtStyle[] = [
     },
   },
   {
-    name: "test3",
+    name: "goodNight",
     background: {
       color: "#FFF2F2",
     },
     shape: {
       fill: {
-        color: "#888",
+        color: "#a9b5df",
       },
     },
     pattern: {
@@ -133,9 +133,17 @@ const styleList: ISmartArtStyle[] = [
         width: 2,
       },
     },
+    text: {
+      fill: {
+        color: "#41509b",
+      },
+      font: {
+        weight: "bold",
+      },
+    },
   },
   {
-    name: "test4",
+    name: "sport",
     background: {
       color: "#F2EFE7",
     },
@@ -157,6 +165,51 @@ const styleList: ISmartArtStyle[] = [
       stroke: {
         color: "#EFB036",
         width: 2,
+      },
+    },
+  },
+  {
+    name: "black",
+    background: {
+      color: "#fff",
+    },
+    shape: {
+      stroke: {
+        color: "#222",
+        width: 2,
+      },
+    },
+    pattern: {
+      stroke: {
+        color: "#222",
+        width: 2,
+      },
+    },
+    icon: {
+      stroke: {
+        color: "#222",
+        width: 2,
+      },
+    },
+  },
+  {
+    name: "blackBG",
+    background: {
+      color: "#fff",
+    },
+    shape: {
+      fill: {
+        color: "#222",
+      },
+    },
+    pattern: {
+      fill: {
+        color: "#222",
+      },
+    },
+    icon: {
+      fill: {
+        color: "#fff",
       },
     },
   },
@@ -216,7 +269,43 @@ class SmartArtStyle {
     if (_style.stroke) {
       el.stroke(_style.stroke);
     } else {
-      el.stroke({ color: "none" });
+      el.stroke({
+        color: "none",
+      });
+    }
+  }
+
+  applyTextStyle(el: Element, style: IStyleFn, index: number) {
+    let _style: IStyle;
+
+    if (typeof style === "function") {
+      _style = style(index || 0);
+    } else {
+      _style = style;
+    }
+
+    if (_style.fill) {
+      el.fill(_style.fill);
+    }
+
+    if (_style.stroke) {
+      el.stroke(_style.stroke);
+    }
+
+    if (_style.font) {
+      el.font(_style.font);
+    }
+  }
+
+  clearStyle(el: Element) {
+    const attributes = el.node.attributes;
+
+    for (let i = attributes.length - 1; i >= 0; i--) {
+      const attrName = attributes[i].name;
+
+      if (attrName !== "transform" && attrName !== "id") {
+        el.node.removeAttribute(attrName);
+      }
     }
   }
 

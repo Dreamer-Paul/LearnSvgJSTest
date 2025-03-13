@@ -478,7 +478,6 @@ class SmartArtEditor {
 
         // 线条元素
         if (el.attr("fill") === "none") {
-
         } else if (styleItem?.shape) {
           this.style.applyStyle(el, styleItem.shape, 0);
         }
@@ -507,8 +506,6 @@ class SmartArtEditor {
       } else {
         templateStyle = styleItem?.text;
       }
-
-      console.log("templateStyle", templateStyle);
 
       const mixedStyle = this.style.mixStyle(
         style,
@@ -650,7 +647,10 @@ class SmartArtEditor {
         }
       });
 
-      // 更新不需要重新应用样式
+      if (style) {
+        this.style.clearStyle(add);
+        this.style.applyTextStyle(add, style, index);
+      }
     });
 
     // 重新垂直居中
@@ -727,7 +727,7 @@ class SmartArtEditor {
     this.skeletonStructures.shapes.forEach((item, index) => {
       if (!styleItem?.shape) {
         return;
-      };
+      }
 
       item.elements.forEach((el) => {
         this.style.applyStyle(el, styleItem.shape, index);
@@ -809,6 +809,8 @@ class SmartArtEditor {
   updateText(data: TextControlOption & { text: string }) {
     console.log("updateTextNew", data);
 
+    const styleItem = this.style.getStyleItem(this._style);
+
     const node = this.textEl[data.index] as Text;
     const option = this.option.getText(data.id);
 
@@ -816,13 +818,23 @@ class SmartArtEditor {
       return;
     }
 
+    let templateStyle;
+    if (typeof styleItem?.text === "function") {
+      templateStyle = styleItem.text(data.index);
+    } else {
+      templateStyle = styleItem?.text;
+    }
+
+    const mixedStyle = this.style.mixStyle(
+      data.style,
+      templateStyle,
+      option.style
+    );
+
     this.updateDrawText({
       text: data.text,
       width: data.width,
-      style: {
-        ...data.style,
-        ...option.style,
-      },
+      style: mixedStyle,
       textAlign: data.textAlign,
       node,
       index: data.index,

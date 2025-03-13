@@ -30,7 +30,7 @@ onMounted(async () => {
     el: "#svg-container",
     template: "converge2-v1--family",
     count: 4,
-    style: "test2",
+    style: "greenTree",
     option: {
       "text-title": {
         text: "测试标题",
