@@ -75,6 +75,7 @@ interface SmartArtEditorProps extends SmartArtEditorBaseProps {
   el: string;
   onUpdateControlButtons?: (options: ItemControlOption[]) => void;
   onUpdateControlTexts?: (options: TextControlOption[]) => void;
+  onUpdateControlIcons?: (options: TextControlOption[]) => void;
 }
 
 class SmartArtEditor {
@@ -120,6 +121,9 @@ class SmartArtEditor {
   private onUpdateControlTexts:
     | ((options: TextControlOption[]) => void)
     | undefined;
+  private onUpdateControlIcons:
+    | ((options: TextControlOption[]) => void)
+    | undefined;
 
   constructor(props: SmartArtEditorProps) {
     this.template = props.template;
@@ -130,6 +134,10 @@ class SmartArtEditor {
 
     if (props.onUpdateControlTexts) {
       this.onUpdateControlTexts = props.onUpdateControlTexts;
+    }
+
+    if (props.onUpdateControlTexts) {
+      this.onUpdateControlIcons = props.onUpdateControlIcons;
     }
 
     this.count = props.count;
@@ -428,12 +436,7 @@ class SmartArtEditor {
     const a = this.option.getAllIconName();
 
     // Todo: 临时操作，写的比较粗糙
-    const icons = await this.icon.fetchIcons(a);
-
-    // Todo: 图标素材入库，下次最好不再请求图片资源
-    a.forEach((i, index) => {
-      icons[index] && this.icon.addToMap(i, icons[index]);
-    });
+    await this.icon.fetchIcons([...a, "bug-line"]);
 
     this.draw.clear();
 
@@ -587,6 +590,8 @@ class SmartArtEditor {
 
       return g;
     }) as G[];
+
+    this.onUpdateControlIcons?.(this.iconPlaceholdersOptions);
   }
 
   // 绘制文字
@@ -853,6 +858,42 @@ class SmartArtEditor {
     });
 
     this.option.setItem(`text-${data.id}`, { text: data.text });
+  }
+
+  async updateIcon(data: TextControlOption & { name: string }) {
+    const styleItem = this.style.getStyleItem(this._style);
+
+    const node = this.iconGroupsEl[data.index] as G;
+    const option = this.option.getIcon(data.id);
+
+    console.log(node, option);
+
+    if (!node || !option) {
+      return;
+    }
+
+    console.log("updateIcon", data, option);
+
+
+    let templateStyle;
+    if (typeof styleItem?.icon === "function") {
+      templateStyle = styleItem.icon(data.index);
+    } else {
+      templateStyle = styleItem?.icon;
+    }
+
+    this.option.setItem(`icon-${data.id}`, { name: data.name });
+
+    // Todo: 临时操作，写的比较粗糙
+    await this.icon.fetchIcons([data.name]);
+
+    this.icon.updateIcon(node, data, data.name);
+
+    this.style.applyStyle(
+      node,
+      this.style.mixStyle(templateStyle, option.style),
+      data.index,
+    );
   }
 
   /**

@@ -10,6 +10,7 @@ import useEvaluation from "../hooks/use-evaluation";
 import useSummary from "../hooks/use-summary";
 import { getTemplate, type TemplateCategory } from "../editor/template";
 import fakeData from "../editor/constants/fake-data";
+import IconSearch from "./IconSearch.vue";
 
 const inputText =
   ref(`流萤是米哈游开发的电子游戏《崩坏：星穹铁道》中的虚构角色，属于游戏中的组织“星核猎手”。她的真实身份是基因改造人AR-26710，曾是格拉默共和国的作战兵器“格拉默铁骑”的一员。流萤的角色设定和故事情节深受玩家和评论员的喜爱，尤其是在情感表达和人物成长方面。
@@ -20,6 +21,7 @@ const currentText = ref("");
 
 const addButtonOptions = ref<ItemControlOption[]>([]);
 const controlTextOptions = ref<TextControlOption[]>([]);
+const controlIconOptions = ref<TextControlOption[]>([]);
 
 const controlTextTextarea = ref<TextControlOption | undefined>(undefined);
 
@@ -75,6 +77,9 @@ onMounted(async () => {
     onUpdateControlTexts: (values) => {
       controlTextOptions.value = values;
     },
+    onUpdateControlIcons: (values) => {
+      controlIconOptions.value = values;
+    },
   });
 
   console.log("drawInst", drawInst);
@@ -125,6 +130,28 @@ const onBlur = (ev: Event) => {
 
   controlTextTextarea.value = undefined;
 };
+
+const selectedIconControl = ref<TextControlOption | null>(null);
+
+const openIconSearch = (item: TextControlOption) => {
+  selectedIconControl.value = item;
+
+  // 打开搜索框
+  iconSearchRef.value?.open();
+};
+
+const onIconSelected = (icon: string) => {
+  if (!selectedIconControl.value) return;
+
+  drawInst?.updateIcon({
+    ...selectedIconControl.value,
+    name: icon,
+  });
+
+  selectedIconControl.value = null;
+};
+
+const iconSearchRef = ref();
 
 //
 // 评分
@@ -253,6 +280,20 @@ const onClickTestRedraw = () => {
         >
         </span>
       </div>
+      <IconSearch ref="iconSearchRef" @icon-selected="onIconSelected" />
+      <div class="icon-controls">
+        <span
+          v-for="item in controlIconOptions"
+          :style="{
+            top: `${item.y}px`,
+            left: `${item.x}px`,
+            width: `${item.width}px`,
+            height: `${item.height}px`,
+          }"
+          @click="openIconSearch(item)"
+        >
+        </span>
+      </div>
 
       <div
         v-if="controlTextTextarea"
@@ -339,6 +380,17 @@ const onClickTestRedraw = () => {
 }
 
 .text-controls span:hover {
+  border: 2px solid #2292ff;
+  border-radius: 0.5em;
+}
+
+.icon-controls span {
+  display: block;
+  cursor: pointer;
+  position: absolute;
+}
+
+.icon-controls span:hover {
   border: 2px solid #2292ff;
   border-radius: 0.5em;
 }

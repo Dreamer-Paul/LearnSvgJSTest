@@ -1,4 +1,4 @@
-import { type Svg } from "@svgdotjs/svg.js";
+import { G, type Svg } from "@svgdotjs/svg.js";
 import type { TextControlOption } from ".";
 
 export interface ISmartArtDataItem {
@@ -64,7 +64,13 @@ class SmartArtIcon {
    * @returns {Promise}
    */
   async fetchIcons(iconNames: string[]) {
-    return Promise.all(iconNames.map((item) => this.fetchIcon(item)));
+    return Promise.all(iconNames.map((item) => this.fetchIcon(item))).then(
+      (res) => {
+        iconNames.forEach((name, index) => {
+          res[index] && this.addToMap(name, res[index]);
+        });
+      }
+    );
   }
 
   /**
@@ -109,6 +115,54 @@ class SmartArtIcon {
     g.translate(icon.x + offsetX, icon.y + offsetY);
 
     return g;
+  }
+
+  updateIcon(node: G, icon: TextControlOption, name: string) {
+    const iconStr = this.map[name];
+
+    if (!iconStr) {
+      return;
+    }
+
+    const elWidth = icon.width - 4;
+    const elHeight = icon.height - 4;
+
+    node.id(`icon-${name}`);
+
+    // 查找现有的 path 元素
+    const existingPath = node.findOne("path");
+    if (existingPath) {
+      // 移除现有的 path 元素
+      existingPath.remove();
+    }
+
+    // 添加新的 path 元素
+    const iconElement = node.svg(iconStr).first();
+
+    // 获取图标的原始宽度和高度
+    const originalWidth = iconElement.width() as number;
+    const originalHeight = iconElement.height() as number;
+
+    // 计算宽度和高度的缩放比例
+    const widthScale = elWidth / originalWidth;
+    const heightScale = elHeight / originalHeight;
+
+    // 选择较小的缩放比例以保持图标的宽高比
+    const scale = Math.min(widthScale, heightScale);
+
+    // 按比例缩放图标
+    iconElement.size(originalWidth * scale, originalHeight * scale);
+
+    // 居中对齐
+    const offsetX = (elWidth - (iconElement.width() as number)) / 2;
+    const offsetY = (elHeight - (iconElement.height() as number)) / 2;
+
+    node.transform({
+      translateX: icon.x + offsetX,
+      translateY: icon.y + offsetY,
+    });
+
+    return node;
   }
 
   /**

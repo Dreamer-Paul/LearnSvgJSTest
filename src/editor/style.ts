@@ -265,7 +265,10 @@ export interface IStyle {
   font?: FontData;
 }
 
-export type IStyleFn = IStyle | ((index: number, id?: string) => IStyle | undefined) | undefined;
+export type IStyleFn =
+  | IStyle
+  | ((index: number, id?: string) => IStyle | undefined)
+  | undefined;
 
 interface ISmartArtStyle {
   name: string;
