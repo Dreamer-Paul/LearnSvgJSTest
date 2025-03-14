@@ -7,7 +7,19 @@ import type {
 } from "@svgdotjs/svg.js";
 
 // 预设的颜色组合，更换模版可取这里的颜色做风格化
-const presetColors = ["#d70505", "#ffa700", "#48ce07", "#02d09e", "#028dd0"];
+const presetColors = [
+  "#59D5E0",
+  "#F5DD61",
+  "#FAA300",
+  "#F4538A",
+  "#7ED7C1",
+  "#D8B4F8",
+  "#00DFA2",
+  "#3DB2FF",
+  "#CD113B",
+  "#3B14A7",
+  "#59886B",
+];
 
 const presetColors2 = [
   "#64B5F6",
@@ -24,7 +36,7 @@ const presetColors2 = [
 const styleList: ISmartArtStyle[] = [
   {
     // 模板名称
-    name: "TestColors1",
+    name: "TextWithColors",
     background: {
       color: "#FEFAE0",
     },
@@ -33,10 +45,10 @@ const styleList: ISmartArtStyle[] = [
         color: "#888",
       },
     },
-    pattern: (index: number) => {
+    pattern: (index, id) => {
       return {
         fill: {
-          color: presetColors[index],
+          color: presetColors[parseInt(id || "0")],
         },
         stroke: {
           color: "#626F47",
@@ -50,10 +62,33 @@ const styleList: ISmartArtStyle[] = [
         width: 2,
       },
     },
+    text: (index, id) => {
+      // 这是彩虹色标题
+      if (id?.match(/^\d+$/)) {
+        return {
+          fill: {
+            color: presetColors[parseInt(id)],
+          },
+          font: {
+            weight: "bold",
+          },
+        };
+      }
+    },
   },
   {
     // 模板名称
     name: "TestColors2",
+    palette: [
+      "#64B5F6",
+      "#FFD95C",
+      "#F06292",
+      "#4DD0E1",
+      "#9575CD",
+      "#FF8A65",
+      "#AED581",
+      "#DCE775",
+    ],
     background: {
       color: "#fff",
     },
@@ -207,10 +242,12 @@ const styleList: ISmartArtStyle[] = [
         color: "#222",
       },
     },
-    pattern: {
-      fill: {
-        color: "#222",
-      },
+    pattern: (index: number) => {
+      return {
+        fill: {
+          color: index % 2 === 0 ? "#222" : "#666",
+        },
+      };
     },
     icon: {
       fill: {
@@ -228,10 +265,11 @@ export interface IStyle {
   font?: FontData;
 }
 
-export type IStyleFn = IStyle | ((index: number) => IStyle);
+export type IStyleFn = IStyle | ((index: number, id?: string) => IStyle | undefined) | undefined;
 
 interface ISmartArtStyle {
   name: string;
+  palette?: string[];
   background?: FillData;
   shape: IStyleFn;
   pattern: IStyleFn;
@@ -256,13 +294,17 @@ class SmartArtStyle {
    * @param style 样式
    * @param index 索引
    */
-  applyStyle(el: Element, style: IStyleFn, index: number) {
-    let _style: IStyle;
+  applyStyle(el: Element, style: IStyleFn, index: number, id?: string) {
+    let _style: IStyle | undefined;
 
     if (typeof style === "function") {
-      _style = style(index || 0);
+      _style = style(index || 0, id);
     } else {
       _style = style;
+    }
+
+    if (!_style) {
+      return;
     }
 
     if (_style.fill) {
@@ -281,12 +323,16 @@ class SmartArtStyle {
   }
 
   applyTextStyle(el: Element, style: IStyleFn, index: number) {
-    let _style: IStyle;
+    let _style: IStyle | undefined;
 
     if (typeof style === "function") {
       _style = style(index || 0);
     } else {
       _style = style;
+    }
+
+    if (!_style) {
+      return;
     }
 
     if (_style.fill) {

@@ -454,9 +454,11 @@ class SmartArtEditor {
     const styleItem = this.style.getStyleItem(this._style);
 
     // 画元素
+    const patternGroup = this.draw.group().id("patterns");
+
     this.patternGroupsEl = this.skeletonStructures.pattern.map(
       (item, index) => {
-        const g = this.draw.group();
+        const g = patternGroup.group();
         g.id(`g-${item.id}`);
         g.path(item.path);
 
@@ -465,7 +467,7 @@ class SmartArtEditor {
         }
 
         if (styleItem?.pattern) {
-          this.style.applyStyle(g, styleItem.pattern, index);
+          this.style.applyStyle(g, styleItem.pattern, index, item.id);
         }
 
         return g;
@@ -510,7 +512,7 @@ class SmartArtEditor {
 
       let templateStyle;
       if (typeof styleItem?.text === "function") {
-        templateStyle = styleItem.text(index);
+        templateStyle = styleItem.text(index, item.id);
       } else {
         templateStyle = styleItem?.text;
       }
@@ -723,12 +725,14 @@ class SmartArtEditor {
 
     // 与内容有关的装饰性元素
     // Todo: 装饰性元素暂时没有 Options 自定义样式
-    this.patternGroupsEl.forEach((item, index) => {
+    this.skeletonStructures.pattern.forEach((item, index) => {
+      const node = this.patternGroupsEl[index];
+
       if (!styleItem?.pattern) {
         return;
       }
 
-      this.style.applyStyle(item, styleItem.pattern, index);
+      this.style.applyStyle(node, styleItem.pattern, index, item.id);
     });
 
     // 与内容无关的装饰性元素
@@ -743,9 +747,9 @@ class SmartArtEditor {
     });
 
     // 修改文字样式
-    this.textEl.forEach((item, index) => {
-      const textOption = this.skeletonStructures.text[index];
-      const option = this.option.getText(textOption.id);
+    this.skeletonStructures.text.forEach((item, index) => {
+      const node = this.textEl[index] as Text;
+      const option = this.option.getText(item.id);
 
       if (!option) {
         return;
@@ -753,23 +757,23 @@ class SmartArtEditor {
 
       let templateStyle;
       if (typeof styleItem?.text === "function") {
-        templateStyle = styleItem.text(index);
+        templateStyle = styleItem.text(index, item.id);
       } else {
         templateStyle = styleItem?.text;
       }
 
       const mixedStyle = this.style.mixStyle(
-        textOption.style,
+        item.style,
         templateStyle,
         option.style
       );
 
       this.updateDrawText({
         text: option.text,
-        width: textOption.width,
-        textAlign: textOption.textAlign,
+        width: item.width,
+        textAlign: item.textAlign,
         style: mixedStyle,
-        node: item as Text,
+        node,
         index,
       });
     });
@@ -828,7 +832,7 @@ class SmartArtEditor {
 
     let templateStyle;
     if (typeof styleItem?.text === "function") {
-      templateStyle = styleItem.text(data.index);
+      templateStyle = styleItem.text(data.index, data.id);
     } else {
       templateStyle = styleItem?.text;
     }
