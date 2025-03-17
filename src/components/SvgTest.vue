@@ -50,25 +50,25 @@ onMounted(async () => {
         text: "图标的坐标有问题",
       },
       "icon-1": {
-        name: "home-heart-fill",
+        name: "book",
       },
       "text-2": {
         text: "两个人来开发人家几十人团队的项目",
       },
       "icon-2": {
-        name: "bank-line",
+        name: "brain",
       },
       "text-3": {
         text: "手搓功能 Bug 是真的巨多啊",
       },
       "icon-3": {
-        name: "vip-crown-line",
+        name: "heart-2",
       },
       "text-4": {
         text: "这个 AI 也好难调教",
       },
       "icon-4": {
-        name: "weight-line",
+        name: "profile",
       },
     },
     onUpdateControlButtons: (values) => {

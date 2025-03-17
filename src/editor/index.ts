@@ -575,7 +575,7 @@ class SmartArtEditor {
 
       let templateStyle;
       if (typeof styleItem?.icon === "function") {
-        templateStyle = styleItem.icon(index);
+        templateStyle = styleItem.icon(index, item.id);
       } else {
         templateStyle = styleItem?.icon;
       }
@@ -584,7 +584,8 @@ class SmartArtEditor {
         this.style.applyStyle(
           g,
           this.style.mixStyle(templateStyle, option.style),
-          index
+          index,
+          item.id,
         );
       }
 
@@ -792,7 +793,7 @@ class SmartArtEditor {
 
         let templateStyle;
         if (typeof styleItem?.icon === "function") {
-          templateStyle = styleItem.icon(index);
+          templateStyle = styleItem.icon(index, item.id);
         } else {
           templateStyle = styleItem?.icon;
         }
@@ -801,7 +802,8 @@ class SmartArtEditor {
           this.style.applyStyle(
             g,
             this.style.mixStyle(templateStyle, option.style),
-            index
+            index,
+            item.id,
           );
         }
 
@@ -877,7 +879,7 @@ class SmartArtEditor {
 
     let templateStyle;
     if (typeof styleItem?.icon === "function") {
-      templateStyle = styleItem.icon(data.index);
+      templateStyle = styleItem.icon(data.index, data.id);
     } else {
       templateStyle = styleItem?.icon;
     }
@@ -893,6 +895,7 @@ class SmartArtEditor {
       node,
       this.style.mixStyle(templateStyle, option.style),
       data.index,
+      data.id,
     );
   }
 

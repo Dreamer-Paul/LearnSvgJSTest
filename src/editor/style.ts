@@ -78,19 +78,85 @@ const styleList: ISmartArtStyle[] = [
   },
   {
     // 模板名称
+    name: "TestColors3",
+    background: {
+      color: "#eee",
+    },
+    shape: {
+      fill: {
+        color: "#bbb",
+      },
+    },
+    pattern: {
+      fill: {
+        color: "#fff",
+      },
+    },
+    icon: (index, id) => {
+      if (id?.match(/^\d+$/)) {
+        return {
+          stroke: {
+            color: presetColors2[parseInt(id)],
+            width: 2,
+          },
+        };
+      }
+
+      return {
+        stroke: {
+          color: "#222",
+          width: 2,
+        },
+      };
+    },
+    text: (index, id) => {
+      // 这是彩虹色标题
+      if (id?.match(/^\d+$/)) {
+        return {
+          fill: {
+            color: presetColors2[parseInt(id)],
+          },
+          font: {
+            weight: "bold",
+          },
+        };
+      }
+    },
+  },
+  {
+    // 模板名称
     name: "TestColors2",
-    palette: [
-      "#64B5F6",
-      "#FFD95C",
-      "#F06292",
-      "#4DD0E1",
-      "#9575CD",
-      "#FF8A65",
-      "#AED581",
-      "#DCE775",
-    ],
     background: {
       color: "#fff",
+    },
+    shape: {
+      fill: {
+        color: "#bbb",
+      },
+    },
+    pattern: (index: number) => {
+      return {
+        fill: {
+          color: presetColors2[index],
+        },
+      };
+    },
+    icon: {
+      fill: {
+        color: "#fff",
+      },
+    },
+    text: {
+      fill: {
+        color: "#30394A",
+      },
+    },
+  },
+  {
+    // 模板名称
+    name: "DarkMode",
+    background: {
+      color: "#222",
     },
     shape: {
       fill: {
@@ -112,7 +178,7 @@ const styleList: ISmartArtStyle[] = [
     },
     text: {
       fill: {
-        color: "#30394A",
+        color: "#eee",
       },
     },
   },

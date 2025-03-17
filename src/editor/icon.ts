@@ -12,6 +12,8 @@ export interface ISmartArtData {
 
 export type ISmartArtMap = Record<string, string>;
 
+const baseUrl = import.meta.env.APP_ICON_S3_BASEURL;
+
 class SmartArtIcon {
   private draw: Svg;
 
@@ -31,7 +33,7 @@ class SmartArtIcon {
    * @returns {Promise<string>}
    */
   async fetchIcon(iconName: string) {
-    const response = await fetch(`/icons/${iconName}.svg`);
+    const response = await fetch(`${baseUrl}/${iconName}-line.svg`);
 
     const svgText = await response.text();
 
@@ -52,8 +54,12 @@ class SmartArtIcon {
       combinedPathData += path.getAttribute("d") + " ";
     });
 
+    // 更正部分图标的填充属性
+    const fillRule = paths.item(0)?.getAttribute("fill-rule") || "nonzero";
+    const clipRule = paths.item(0)?.getAttribute("clip-rule") || "nonzero";
+
     // 创建一个新的 SVG 元素，包含合并后的 path
-    const combinedSvg = `<path d="${combinedPathData.trim()}" />`;
+    const combinedSvg = `<path d="${combinedPathData.trim()}" fill-rule="${fillRule}" clip-rule="${clipRule}" />`;
 
     return combinedSvg;
   }
